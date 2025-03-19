@@ -10,7 +10,21 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'API documentation for Express.js TypeScript backend'
     },
-    servers: [{ url: 'http://localhost:5000' }]
+    servers: [{ url: 'http://localhost:5000' }],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT' // Định dạng token là JWT
+        }
+      }
+    },
+    security: [
+      {
+        BearerAuth: []
+      }
+    ]
   },
   apis: ['./src/controllers/*.ts'] // Đọc tài liệu từ các controller
 }

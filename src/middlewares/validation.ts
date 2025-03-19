@@ -39,10 +39,20 @@ export const validateRegister = (): ValidationChain[] => [
     })
 ]
 
+export const validateLogin = (): ValidationChain[] => [
+  body('emailOrPhone').trim().notEmpty().withMessage('Email hoặc số điện thoại không được để trống'),
+
+  body('password')
+    .notEmpty()
+    .withMessage('Mật khẩu không được để trống')
+    .isLength({ min: 6 })
+    .withMessage('Mật khẩu phải có ít nhất 6 ký tự')
+]
+
 /**
  * Middleware xử lý lỗi validation
  */
-export const handleValidationErrors : any = (req: Request, res: Response, next: NextFunction) => {
+export const handleValidationErrors: any = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(HttpStatus.BAD_REQUEST).json({
