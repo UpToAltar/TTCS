@@ -6,3 +6,8 @@ export type RegisterType = {
   phone: string
   confirmPassword: string
 }
+
+export type LoginType = {
+  emailOrPhone: string
+  password: string
+}
