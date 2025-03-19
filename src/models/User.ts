@@ -31,7 +31,6 @@ export class User extends Model {
   userName!: string
 
   @AllowNull(false)
-  @Unique // Email phải là duy nhất
   @Column(DataType.STRING)
   email!: string
 
@@ -55,6 +54,9 @@ export class User extends Model {
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
   roleId?: string
+
+  @Column(DataType.BOOLEAN)
+  status?: boolean
 
   @BelongsTo(() => Role)
   role!: Role
