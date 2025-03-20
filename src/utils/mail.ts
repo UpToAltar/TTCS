@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer'
+const regexCheckEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export const sendVerificationEmail = async (email: string, token: string) => {
+export const sendVerificationEmail = async (email: string, token: string, subject?:string, html?:string) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -14,10 +15,15 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Xác nhận tài khoản',
-    html: `<p>Vui lòng nhấn vào liên kết sau để xác nhận tài khoản của bạn:</p>
+    subject: subject? subject : 'Xác nhận tài khoản',
+    html: html ? html : `<p>Vui lòng nhấn vào liên kết sau để xác nhận tài khoản của bạn:</p>
            <a href="${verificationLink}">Xác nhận tài khoản</a>`
   }
 
   await transporter.sendMail(mailOptions)
+}
+
+export const validateEmail = (input: string) => {
+  if (input) return regexCheckEmail.test(input)
+  else return false
 }

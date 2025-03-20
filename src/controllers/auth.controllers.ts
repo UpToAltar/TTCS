@@ -2,8 +2,9 @@ import { Request, RequestHandler, Response } from 'express'
 import { UserService } from '../services/user.service'
 import { apiResponse } from '~/utils/apiResponse'
 import { HttpStatus } from '~/utils/httpStatus'
-import { LoginType, RegisterType } from '~/type/auth.type'
+import { ChangePasswordType, LoginType, RegisterType } from '~/type/auth.type'
 import { AuthService } from '~/services/auth.service'
+import { validateEmail } from '~/utils/mail'
 
 /**
  * @swagger
@@ -89,7 +90,7 @@ export class AuthController {
 
   static async login(req: Request, res: Response) {
     try {
-      const body : LoginType = req.body
+      const body: LoginType = req.body
       const result: any = await AuthService.loginService(body)
       res.json(apiResponse(HttpStatus.OK, 'Đăng nhập thành công', result))
     } catch (error: any) {
@@ -136,6 +137,94 @@ export class AuthController {
       const result = await AuthService.verifyEmail(token as string)
 
       res.json(apiResponse(HttpStatus.OK, 'Email đã được xác thực thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/auth/send-email-reset-password:
+   *   get:
+   *     summary: Gửi mail đổi mật khẩu
+   *     description: Gửi email lấy OTP đổi mật khẩu.
+   *     tags:
+   *       - Auth
+   *     parameters:
+   *       - in: query
+   *         name: email
+   *         schema:
+   *           type: string
+   *         required: true
+   *         description: Mã xác thực OTP được gửi qua email
+   *     responses:
+   *       200:
+   *         description: Gửi OTP thành công
+   *       400:
+   *         description: Email không hợp lệ
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static sendEmailResetPassword: any = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query
+
+      if (!email || !validateEmail(email as string)) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Email không hợp lệ', null, true))
+      }
+
+      // Gọi service để xác thực email
+      const result = await AuthService.sendEmailResetPassword(email as string)
+
+      res.json(apiResponse(HttpStatus.OK, 'Đã gửi OTP đến email', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/auth/change-password:
+   *   post:
+   *     summary: Đổi mật khẩu
+   *     description: Đổi mật khẩu với mã xác thực gửi về mail
+   *     tags:
+   *       - Auth
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               email:
+   *                 type: string
+   *               code:
+   *                 type: string
+   *               password:
+   *                 type: string
+   *               confirmPassword:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: Đổi mật khẩu thành công
+   *       400:
+   *         description: Dữ liệu không hợp lệ
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const body: ChangePasswordType = req.body
+      const result: any = await AuthService.changePasswordService(body)
+      res.json(apiResponse(HttpStatus.OK, 'Đổi mật khẩu thành công, vui lòng đăng nhập lại', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
