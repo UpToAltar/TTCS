@@ -1,6 +1,6 @@
 import { Op, Sequelize } from 'sequelize'
 import { User } from '~/models/User'
-import { LoginType, RegisterType } from '~/type/auth.type'
+import { ChangePasswordType, JwtUserType, LoginType, RegisterType } from '~/type/auth.type'
 import bcrypt from 'bcrypt'
 import { Role } from '~/models/Role'
 import { v4 as uuidv4 } from 'uuid'
@@ -83,13 +83,14 @@ export class AuthService {
       if (!checkPassword) {
         throw new Error('Mật khẩu không đúng')
       }
-      
-      const resultUser = {
+
+      const resultUser: JwtUserType = {
         id: user?.dataValues.id,
         userName: user?.dataValues.userName,
         email: user?.dataValues.email,
         phone: user?.dataValues.phone,
-        role: user?.dataValues.role?.dataValues.name || ''
+        role: user?.dataValues.role?.dataValues.name || '',
+        status: user?.dataValues.status
       }
 
       // Tạo token
@@ -115,10 +116,73 @@ export class AuthService {
         throw new Error('Tài khoản đã được kích hoạt')
       }
 
-      console.log('user', user)
-
       // Cập nhật trạng thái tài khoản
       await user.update({ status: true })
+
+      return true
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  // Gửi OTP qua email để reset mật khẩu
+  static async sendEmailResetPassword(email: string) {
+    try {
+      const user = await User.findOne({ where: { email } })
+
+      if (!user) {
+        throw new Error('Email không tồn tại')
+      }
+      if (user?.dataValues.resetPasswordExpires && user?.dataValues.resetPasswordExpires >= new Date()) {
+        throw new Error('Đã gửi OTP và mã OTP còn thời hạn, vui lòng kiểm tra email')
+      }
+
+      // Tạo mã OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString()
+      // Thời gian hết hạn của OTP
+      const minutes = parseInt(process.env.PASSWORD_RESET_EXPIRED || '15m')
+      const expires = new Date(Date.now() + minutes * 60 * 1000)
+
+      // Cập nhật mã OTP và thời gian hết hạn
+      await user.update({ resetPasswordOTP: otp, resetPasswordExpires: expires })
+
+      // Gửi email
+      await sendVerificationEmail(
+        email,
+        otp,
+        'Mã OTP đổi mật khẩu',
+        `<p>Vui lòng nhập mã OTP sau để đổi mật khẩu và không cung cấp cho bất kì ai:</p> <h2>${otp}</h2>`
+      )
+
+      return true
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  // Đổi mật khẩu
+  static async changePasswordService(body: ChangePasswordType) {
+    try {
+      const user = await User.findOne({ where: { email: body.email } })
+      if (!user) {
+        throw new Error('Email không tồn tại')
+      }
+
+      // Kiểm tra mã OTP
+      if (user?.dataValues.resetPasswordOTP !== body.code) {
+        throw new Error('Mã OTP không đúng')
+      }
+      // Kiểm tra thời gian hết hạn của OTP
+      if (user?.dataValues.resetPasswordExpires < new Date()) {
+        throw new Error('Mã OTP đã hết hạn')
+      }
+
+      // Băm mật khẩu mới
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = await bcrypt.hash(body.password, salt)
+
+      // Cập nhật mật khẩu mới
+      await user.update({ password: hashedPassword, resetPasswordOTP: null, resetPasswordExpires: null })
 
       return true
     } catch (error: any) {
