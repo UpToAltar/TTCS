@@ -4,8 +4,8 @@ import { authentication, isAdmin } from '~/middlewares/auth.middleware'
 
 const router = Router()
 
-router.get('/', authentication, isAdmin, UserController.getUsers)
-router.get('/:id', authentication, UserController.getUserById)
-router.put('/:id', authentication, UserController.updateUser)
-router.delete('/:id', authentication, isAdmin, UserController.deleteUser)
+router.get('/get-all-users', authentication, isAdmin, UserController.handleGetAllUsers)
+router.post('/create-new-user', authentication, UserController.handleCreateNewUser)
+router.put('/update-user', authentication, UserController.handleUpdateUser)
+router.delete('/delete-user', authentication, isAdmin, UserController.handleDeleteUser)
 export default router

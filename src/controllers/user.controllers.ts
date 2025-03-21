@@ -14,7 +14,7 @@ export class UserController {
    *       200:
    *         description: Thành công
    */
-  static async getUsers(req: Request, res: Response) {
+  static async handleGetAllUsers(req: Request, res: Response) {
     try {
       const users = await UserService.getAllUsers()
       res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách người dùng thành công', users))
@@ -27,47 +27,18 @@ export class UserController {
 
   /**
    * @swagger
-   * /api/users/{id}:
-   *   get:
-   *     summary: Lấy thông tin người dùng theo ID
-   *     description: Trả về thông tin chi tiết của một người dùng dựa trên ID
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         description: ID của người dùng cần lấy
-   *     responses:
-   *       200:
-   *         description: Thành công
-   *       404:
-   *         description: Không tìm thấy người dùng
-   */
-  static async getUserById(req: Request, res: Response) {
-    try {
-      const user = await UserService.getUserById(req.params.id);
-      if (!user) {
-        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
-      }
-      res.json(apiResponse(HttpStatus.OK, "Lấy thông tin người dùng thành công", user));
-    } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
-    }
-  }
-
-  /**
-   * @swagger
    * /api/users:
    *   post:
-   *     summary: Tạo mới người dùng
+   *     summary: Thêm mới người dùng
    *     description: Tạo mới một người dùng với dữ liệu đầu vào
    *     responses:
    *       201:
    *         description: Tạo thành công
    */
-  static async createUser(req: Request, res: Response) {
+  static async handleCreateNewUser(req: Request, res: Response) {
     try {
-      const newUser = await UserService.createUser(req.body);
+
+      const newUser = await UserService.createNewUser(req.body);
       res.status(HttpStatus.CREATED).json(apiResponse(HttpStatus.CREATED, "Tạo người dùng thành công", newUser));
     } catch (error: any) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -92,16 +63,18 @@ export class UserController {
    *       404:
    *         description: Không tìm thấy người dùng
    */
-  static async updateUser(req: Request, res: Response) {
+  static async handleUpdateUser(req: Request, res: Response): Promise<void> {
     try {
-      const updatedUser = await UserService.updateUser(req.params.id, req.body);
+      const { id } = req.params;
+      const updatedUser = await UserService.updateUser(id, req.body);
+
       if (!updatedUser) {
-        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
+        return;
       }
-      res.json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
+      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
     }
   }
 
@@ -122,16 +95,16 @@ export class UserController {
    *       404:
    *         description: Không tìm thấy người dùng
    */
-  static async deleteUser(req: Request, res: Response) {
+  static async handleDeleteUser(req: Request, res: Response): Promise<void> {
     try {
       const deletedUser = await UserService.deleteUser(req.params.id);
-      if (!deletedUser) {
-        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
-      }
-      res.json(apiResponse(HttpStatus.OK, "Xóa người dùng thành công", deletedUser));
+      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Xóa người dùng thành công", deletedUser));
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+      if (error.message === "Người dùng không tồn tại") {
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, error.message, null, true));
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      }
     }
   }
 }
