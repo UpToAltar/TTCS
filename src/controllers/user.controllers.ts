@@ -2,21 +2,24 @@ import { Request, Response } from 'express'
 import { UserService } from '../services/user.service'
 import { apiResponse } from '~/utils/apiResponse'
 import { HttpStatus } from '~/utils/httpStatus'
+import { updateUserType } from '~/type/user.type'
 
 export class UserController {
   /**
    * @swagger
-   * /api/users:
+   * /api/user/get-all:
    *   get:
    *     summary: Lấy danh sách người dùng
    *     description: Trả về danh sách tất cả người dùng
+   *     tags:
+   *       - User  
    *     responses:
    *       200:
    *         description: Thành công
    */
   static async handleGetAllUsers(req: Request, res: Response) {
     try {
-      const users = await UserService.getAllUsers()
+      const users = await UserService.getUsers()
       res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách người dùng thành công', users))
     } catch (error: any) {
       res
@@ -27,46 +30,41 @@ export class UserController {
 
   /**
    * @swagger
-   * /api/users:
+   * /api/user/update:
    *   post:
-   *     summary: Thêm mới người dùng
-   *     description: Tạo mới một người dùng với dữ liệu đầu vào
-   *     responses:
-   *       201:
-   *         description: Tạo thành công
-   */
-  static async handleCreateNewUser(req: Request, res: Response) {
-    try {
-
-      const newUser = await UserService.createNewUser(req.body);
-      res.status(HttpStatus.CREATED).json(apiResponse(HttpStatus.CREATED, "Tạo người dùng thành công", newUser));
-    } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
-    }
-  }
-
-  /**
-   * @swagger
-   * /api/users/{id}:
-   *   put:
    *     summary: Cập nhật thông tin người dùng
-   *     description: Cập nhật dữ liệu của một người dùng dựa trên ID
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         description: ID của người dùng cần cập nhật
+   *     description: Cập nhật dữ liệu người dùng
+   *     tags:
+   *       - User
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userName:
+   *                 type: string
+   *               email:
+   *                 type: string
+   *               phone:
+   *                 type: string
+   *               birthDate:
+   *                 type: string
+   *               gender:
+   *                 type: boolean
+   *               address:
+   *                 type: string
    *     responses:
    *       200:
    *         description: Cập nhật thành công
    *       404:
    *         description: Không tìm thấy người dùng
    */
-  static async handleUpdateUser(req: Request, res: Response): Promise<void> {
+  static async handleUpdateUser(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const updatedUser = await UserService.updateUser(id, req.body);
+      const user: updateUserType = req.body
+      const updatedUser = await UserService.updateUser(user);
 
       if (!updatedUser) {
         res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
@@ -80,31 +78,38 @@ export class UserController {
 
   /**
    * @swagger
-   * /api/users/{id}:
+   * /api/user/delete:
    *   delete:
    *     summary: Xóa người dùng
-   *     description: Xóa một người dùng dựa trên ID
+   *     description: Xóa một người dùng dựa trên số điện thoại
+   *     tags:
+   *       - User
    *     parameters:
-   *       - in: path
-   *         name: id
+   *       - in: query
+   *         name: phone
+   *         schema:
+   *           type: string
    *         required: true
-   *         description: ID của người dùng cần xóa
+   *         description: Số điện thoại người dùng
    *     responses:
    *       200:
    *         description: Xóa thành công
    *       404:
    *         description: Không tìm thấy người dùng
+   *       500:
+   *         description: Lỗi máy chủ
    */
-  static async handleDeleteUser(req: Request, res: Response): Promise<void> {
+
+  static async handleDeleteUser(req: Request, res: Response) {
     try {
-      const deletedUser = await UserService.deleteUser(req.params.id);
+      const { phone } = req.query
+      if (!phone)
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Người dùng không tồn tại", null, true));
+      const deletedUser = await UserService.deleteUser(phone as string);
       res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Xóa người dùng thành công", deletedUser));
     } catch (error: any) {
-      if (error.message === "Người dùng không tồn tại") {
-        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, error.message, null, true));
-      } else {
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
-      }
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
     }
   }
 }
+

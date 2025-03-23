@@ -1,4 +1,4 @@
-import { RegisterType } from "~/type/auth.type";
+import { updateUserType } from "~/type/user.type";
 import { Op } from 'sequelize'
 import { User } from '~/models/User'
 import { Role } from '~/models/Role'
@@ -7,99 +7,59 @@ import { v4 as uuidv4 } from 'uuid'
 
 
 export class UserService {
-  static async getAllUsers(userId?: string) {
+  static async getUsers() {
     try {
-      if (!userId || userId === 'ALL') {
-        // Lấy tất cả người dùng, loại bỏ trường password
-        return await User.findAll({
-          attributes: { exclude: ['password'] },
-        });
-      }
-
-      // Lấy thông tin một người dùng theo ID
-      const user = await User.findOne({
-        where: { id: userId },
+      return await User.findAll({
         attributes: { exclude: ['password'] },
       });
-
-      return user || null;
-    } catch (error) {
-      throw new Error('Lỗi khi lấy danh sách người dùng');
     }
-  }
-
-  static async createNewUser(data: { userName: string; email: string; phone: string; password: string; birthDate?: Date; gender?: boolean; address?: string; roleId?: string; status?: boolean }) {
-    try {
-      // Kiểm tra email đã tồn tại chưa
-      const existingUser = await User.findOne({ where: { email: data.email } });
-      if (existingUser) {
-        throw new Error('Email đã được sử dụng, vui lòng thử email khác!');
-      }
-
-      // Mã hóa mật khẩu
-      const salt = await bcrypt.genSalt(10)
-      const hashedPassword = await bcrypt.hash(data.password, salt)
-      // Tạo người dùng mới
-      const newUser = await User.create({
-        userName: data.userName,
-        email: data.email,
-        phone: data.phone,
-        password: hashedPassword,
-        birthDate: data.birthDate,
-        gender: data.gender,
-        address: data.address,
-        roleId: data.roleId,
-        status: data.status ?? true, // Mặc định active nếu không truyền
-      });
-      return newUser; // Trả về user mới tạo
-    } catch (error) {
-      throw new Error('Lỗi khi tạo người dùng: ');
+    catch (error) {
+      throw new Error('Lỗi khi lấy danh sách người dùng');
     }
   }
 
   // Cập nhật thông tin người dùng 
 
-  static async updateUser(
-    userId: string,
-    data: { userName?: string; email?: string; phone?: string; birthDate?: Date; gender?: boolean; address?: string; roleId?: string; status?: boolean }
-  ) {
+  static async updateUser(body: updateUserType) {
     try {
-      if (!userId) {
-        throw new Error('Thiếu thông tin người dùng');
+      // Kiểm tra email hoặc số điện thoại đã tồn tại
+      const user = await User.findOne({
+        where: {
+          [Op.or]: [{ email: body.email }, { phone: body.phone }]
+        }
+      })
+      if (user) {
+        await user.update({
+          userName: body.userName,
+          birthDate: body.birthDate,
+          gender: body.gender,
+          address: body.address,
+        })
       }
-
-      const user = await User.findByPk(userId);
-      if (!user) {
-        throw new Error('Người dùng không tồn tại');
-      }
-
-      await user.update({
-        userName: data.userName ?? user.userName,
-        email: data.email ?? user.email,
-        phone: data.phone ?? user.phone,
-        birthDate: data.birthDate ?? user.birthDate,
-        gender: data.gender ?? user.gender,
-        address: data.address ?? user.address,
-        roleId: data.roleId ?? user.roleId,
-        status: data.status ?? user.status
-      });
-
-      return { message: 'Cập nhật người dùng thành công', user };
+      return {
+        message: 'Cập nhật người dùng thành công',
+        user: {
+          userName: user?.dataValues.userName,
+          birthDate: user?.dataValues.birthDate,
+          gender: user?.dataValues.gender,
+          address: user?.dataValues.address,
+        }
+      };
     } catch (error) {
       throw new Error('Lỗi khi cập nhật người dùng');
     }
   }
 
-
   // Xóa người dùng 
-  static async deleteUser(userId: string) {
+  static async deleteUser(phone: string) {
     const user = await User.findOne({
-      where: { id: userId }
+      where: { phone }
     })
     if (!user) {
-      throw new Error('Người dùng không tồn tại')
+      throw new Error('Người dùng không tồn tại');
     }
-    await user.destroy()
-    return { message: 'Người dùng đã được xóa thành công' }
+    await user.destroy();
+    return { message: 'Người dùng đã được xóa thành công' };
   }
+
 }

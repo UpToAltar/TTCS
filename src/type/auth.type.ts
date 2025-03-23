@@ -19,7 +19,7 @@ export type JwtUserType = {
   phone: string | null
   role: string | null
   status: boolean
-  iat?: any 
+  iat?: any
   exp?: any
 }
 
