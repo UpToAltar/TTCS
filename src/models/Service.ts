@@ -12,4 +12,7 @@ export class Service extends Model {
 
   @Column(DataType.INTEGER)
   price!: number
+
+  @Column(DataType.STRING)
+  description?: string
 }
