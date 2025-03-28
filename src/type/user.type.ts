@@ -15,3 +15,12 @@ export type updateUserByAdminType = {
     gender: boolean | null
     address: string | null
 }
+export type createNewUserType = {
+    rolename: string
+    userName: string
+    email: string
+    phone: string
+    birthDate: Date
+    gender: boolean
+    address: string
+}
