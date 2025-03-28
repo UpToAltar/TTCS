@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { UserService } from '../services/user.service'
 import { apiResponse } from '~/utils/apiResponse'
 import { HttpStatus } from '~/utils/httpStatus'
-import { updateUserBySelfType } from '~/type/user.type'
+import { updateUserBySelfType, updateUserByAdminType, createNewUserType } from '~/type/user.type'
 
 export class UserController {
   /**
@@ -12,7 +12,7 @@ export class UserController {
    *     summary: Lấy danh sách người dùng
    *     description: Trả về danh sách tất cả người dùng
    *     tags:
-   *       - Admin  
+   *       - User  
    *     parameters:
  *       - in: query
  *         name: page
@@ -69,7 +69,7 @@ export class UserController {
 
   /**
    * @swagger
-   * /api/users/update:
+   * /api/users/update-by-self:
    *   post:
    *     summary: Cập nhật thông tin người dùng
    *     description: Cập nhật dữ liệu người dùng
@@ -100,10 +100,12 @@ export class UserController {
    *       404:
    *         description: Không tìm thấy người dùng
    */
-  static async handleUpdateUser(req: Request, res: Response) {
+  static async handleUpdateUserBySelf(req: Request, res: Response) {
     try {
-      const user: updateUserBySelfType = req.body
-      const updatedUser = await UserService.updateUserBySelf(user);
+      const userId = req.user?.id;
+
+      const updateData: updateUserBySelfType = req.body
+      const updatedUser = await UserService.updateUserBySelf(userId, updateData);
 
       if (!updatedUser) {
         res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
@@ -116,13 +118,77 @@ export class UserController {
   }
 
   /**
+ * @swagger
+ * /api/users/update/{phone}:
+ *   put:
+ *     summary: Cập nhật thông tin người dùng bởi admin
+ *     description: Admin có thể cập nhật dữ liệu người dùng, bao gồm cả vai trò
+ *     tags:
+ *       - User
+ *      parameters:
+ *       - in: query
+ *         name: sdtoremail
+ *         required: true
+ *      requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               birthDate:
+ *                 type: string
+ *               gender:
+ *                 type: boolean
+ *               address:
+ *                 type: string
+ *               rolename:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ *       404:
+ *         description: Không tìm thấy người dùng hoặc vai trò
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+  static async handleUpdateUserByAdmin(req: Request, res: Response) {
+    try {
+      const { phone } = req.params;
+      const userData: updateUserByAdminType = req.body;
+      if (!phone) {
+        return res.status(HttpStatus.BAD_REQUEST).json(
+          apiResponse(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ", null, true)
+        )
+      }
+      const updatedUser = await UserService.updateUserByAdmin(phone as string, userData)
+
+      if (!updatedUser) {
+        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng hoặc vai trò", null, true));
+      }
+
+      return res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+    }
+  }
+
+  /**
    * @swagger
-   * /api/users/delete:
+   * /api/users/delete/{phone}:
    *   delete:
    *     summary: Xóa người dùng
    *     description: Xóa một người dùng dựa trên số điện thoại
    *     tags:
-   *       - Admin
+   *       - User
    *     parameters:
    *       - in: query
    *         name: phone
@@ -141,13 +207,60 @@ export class UserController {
 
   static async handleDeleteUser(req: Request, res: Response) {
     try {
-      const { phone } = req.query
+      const { phone } = req.params
       if (!phone)
         res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Người dùng không tồn tại", null, true));
-      const deletedUser = await UserService.deleteUser(phone as string);
+      const deletedUser = await UserService.deleteUser(phone as string)
       res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Xóa người dùng thành công", deletedUser));
     } catch (error: any) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+    }
+  }
+
+  /**
+ * @swagger
+ * /api/users/create-user:
+ *   post:
+ *     summary: Tạo người dùng mới bởi admin
+ *     description: Admin có thể tạo tài khoản người dùng mới
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               birthDate:
+ *                 type: string
+ *               gender:
+ *                 type: boolean
+ *               address:
+ *                 type: string
+ *               rolename:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Tạo người dùng thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ hoặc đã tồn tại
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+  static async handleCreateUserByAdmin(req: Request, res: Response) {
+    try {
+      const userData: createNewUserType = req.body;
+      const newUser = await UserService.creatUserbyAdmin(userData);
+      res.status(HttpStatus.CREATED).json(apiResponse(HttpStatus.CREATED, "Tạo người dùng thành công", newUser));
+    } catch (error: any) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
     }
   }
 }
