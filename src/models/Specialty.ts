@@ -11,6 +11,9 @@ export class Specialty extends Model {
   @Column(DataType.STRING)
   name!: string
 
+  @Column(DataType.STRING)
+  url!: string
+
   @HasMany(() => Doctor)
   doctors!: Doctor[]
 }
