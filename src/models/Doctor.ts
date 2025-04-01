@@ -1,6 +1,8 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo } from 'sequelize-typescript'
+import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript'
 import { User } from './User'
 import { Specialty } from './Specialty'
+import { TimeSlot } from './TimeSlot'
+import { MedicalRecord } from './MedicalRecord'
 
 @Table({ timestamps: true })
 export class Doctor extends Model {
@@ -25,4 +27,10 @@ export class Doctor extends Model {
 
   @Column(DataType.TEXT)
   description?: string
+
+  @HasMany(() => TimeSlot)
+  timeSlot?: TimeSlot[]
+
+  @HasMany(() => MedicalRecord)
+  medicalRecord?: MedicalRecord[]
 }

@@ -14,8 +14,8 @@ import {
 import { Role } from './Role'
 import { Notification } from './Notification'
 import { Booking } from './Booking'
-import { MedicalRecord } from './MedicalRecord'
 import { Invoice } from './Invoice'
+import { News } from './News'
 
 @Table({
   timestamps: true // Kích hoạt createdAt & updatedAt tự động
@@ -68,14 +68,11 @@ export class User extends Model {
   role!: Role
 
   @HasMany(() => Notification)
-  notifications!: Notification[]
+  notifications?: Notification[]
 
   @HasMany(() => Booking)
-  bookings!: Booking[]
+  bookings?: Booking[]
 
-  @HasMany(() => MedicalRecord)
-  medicalRecords!: MedicalRecord[]
-
-  @HasMany(() => Invoice)
-  invoices!: Invoice[]
+  @HasMany(() => News)
+  News?: News[]
 }

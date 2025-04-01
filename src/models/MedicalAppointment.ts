@@ -20,13 +20,6 @@ export class MedicalAppointment extends Model {
   @Column(DataType.DATE)
   date!: Date
 
-  @ForeignKey(() => Doctor)
-  @Column(DataType.UUID)
-  doctorId!: string
-
-  @BelongsTo(() => Doctor)
-  doctor!: Doctor
-
   @ForeignKey(() => MedicalRecord)
   @Column(DataType.UUID)
   medicalRecordId!: string
