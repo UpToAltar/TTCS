@@ -16,21 +16,8 @@ export class Invoice extends Model {
   @BelongsTo(() => MedicalAppointment)
   appointment!: MedicalAppointment
 
-  @ForeignKey(() => User)
-  @Column(DataType.UUID)
-  patientId!: string
-
-  @BelongsTo(() => User)
-  patient!: User
-
   @Column(DataType.INTEGER)
   total!: number
-
-  @Column(DataType.INTEGER)
-  paid!: number
-
-  @Column(DataType.INTEGER)
-  remaining!: number
 
   @Column(DataType.STRING)
   status!: string

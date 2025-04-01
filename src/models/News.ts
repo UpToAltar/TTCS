@@ -1,27 +1,32 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo } from 'sequelize-typescript'
 import { User } from './User'
-import { Doctor } from './Doctor'
 
 @Table({ timestamps: true })
-export class MedicalRecord extends Model {
+export class News extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   id: string = ''
 
-  @ForeignKey(() => Doctor)
+  @ForeignKey(() => User)
   @Column(DataType.UUID)
-  doctorId!: string
+  userId!: string
 
-  @BelongsTo(() => Doctor)
-  doctor!: Doctor
+  @BelongsTo(() => User)
+  user!: User
 
-  @Column(DataType.TEXT)
-  diagnosis!: string
-
-  @Column(DataType.TEXT)
-  prescription!: string
+  @Column(DataType.STRING)
+  name!: string
 
   @Column(DataType.TEXT)
-  notes!: string
+  description!: string
+
+  @Column(DataType.STRING)
+  type!: string
+
+  @Column(DataType.DATE)
+  date!: Date
+
+  @Column(DataType.STRING)
+  img!: string
 }
