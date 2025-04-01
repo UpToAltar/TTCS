@@ -24,9 +24,6 @@ export class News extends Model {
   @Column(DataType.STRING)
   type!: string
 
-  @Column(DataType.DATE)
-  date!: Date
-
   @Column(DataType.STRING)
   img!: string
 }

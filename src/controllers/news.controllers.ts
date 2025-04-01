@@ -2,23 +2,25 @@ import { Request, Response } from 'express'
 import { apiResponse } from '~/utils/apiResponse'
 import { HttpStatus } from '~/utils/httpStatus'
 import { SpecialtyService } from '~/services/specialty.service'
+import { AddNewsType } from '~/type/news.type'
+import { NewsService } from '~/services/news.service'
 
 /**
  * @swagger
  * tags:
- *   name: Specialty
- *   description: API chuyên khoa
+ *   name: News
+ *   description: API bài đăng
  */
 
-export class SpecialtyController {
+export class NewsController {
   /**
    * @swagger
-   * /api/specialty/add:
+   * /api/news/add:
    *   post:
-   *     summary: Thêm mới chuyên khoa
-   *     description: API để thêm một chuyên khoa mới
+   *     summary: Thêm mới bài viết
+   *     description: API để thêm một bài viết
    *     tags:
-   *       - Specialty
+   *       - News
    *     requestBody:
    *       required: true
    *       content:
@@ -28,32 +30,38 @@ export class SpecialtyController {
    *             properties:
    *               name:
    *                 type: string
+   *               description:
+   *                type: string
+   *               type:
+   *                type: string
    *               file:
    *                 type: string
    *                 format: binary
    *     responses:
    *       201:
-   *         description: Thêm mới chuyên khoa thành công
+   *         description: Thêm mới bài viết thành công
    *       400:
    *         description: Dữ liệu không hợp lệ
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async createSpecialty(req: Request, res: Response) {
+  static async createNews(req: Request, res: Response) {
     try {
       if (!req.file) {
-        res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Ảnh chuyên khoa là bắt buộc', null, true))
+        res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Ảnh bài viết là bắt buộc', null, true))
         return
       }
 
-      const { name } = req.body
-      if (!name) {
-        res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Tên chuyên khoa là bắt buộc', null, true))
+      const body: AddNewsType = req.body
+      if (!body.name || !body.description || !body.type) {
+        res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Các trường đều không được để trống', null, true))
         return
       }
-
-      const specialty = await SpecialtyService.createSpecialty(name, req.file)
-      res.json(apiResponse(HttpStatus.CREATED, 'Tạo mới chuyên khoa thành công', specialty))
+      const user = req.user
+      body.userId = user.id
+      // Tao moi
+      const news = await NewsService.createNews(body, req.file)
+      res.json(apiResponse(HttpStatus.CREATED, 'Tạo mới bài viết thành công', news))
     } catch (error: any) {
       console.error('Error in createSpecialty:', error)
       res
@@ -64,12 +72,12 @@ export class SpecialtyController {
 
   /**
    * @swagger
-   * /api/specialty:
+   * /api/news:
    *   get:
-   *     summary: Lấy danh sách chuyên khoa
-   *     description: API để lấy danh sách chuyên khoa với phân trang, tìm kiếm, và sắp xếp
+   *     summary: Lấy danh sách bài viết
+   *     description: API để lấy danh sách bài viết với phân trang, tìm kiếm, và sắp xếp
    *     tags:
-   *       - Specialty
+   *       - News
    *     parameters:
    *       - in: query
    *         name: page
@@ -99,21 +107,21 @@ export class SpecialtyController {
    *         description: Thứ tự sắp xếp
    *     responses:
    *       200:
-   *         description: Danh sách chuyên khoa trả về thành công
+   *         description: Danh sách bài viết trả về thành công
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async getAllSpecialties(req: Request, res: Response) {
+  static async getAllNews(req: Request, res: Response) {
     try {
       const { page = 1, limit = 10, search = '', sort = 'createdAt', order = 'DESC' } = req.query
-      const result = await SpecialtyService.getAllSpecialties(
+      const result = await NewsService.getAllNews(
         Number(page),
         Number(limit),
         String(search),
         String(sort),
         String(order)
       )
-      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách chuyên khoa thành công', result))
+      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách bài viết thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -123,12 +131,12 @@ export class SpecialtyController {
 
   /**
    * @swagger
-   * /api/specialty/{id}:
+   * /api/news/{id}:
    *   get:
-   *     summary: Lấy chi tiết chuyên khoa
-   *     description: API lấy thông tin chi tiết của một chuyên khoa
+   *     summary: Lấy chi tiết bài viết
+   *     description: API lấy thông tin chi tiết của một bài viết
    *     tags:
-   *       - Specialty
+   *       - News
    *     parameters:
    *       - in: path
    *         name: id
@@ -137,22 +145,22 @@ export class SpecialtyController {
    *           type: string
    *     responses:
    *       200:
-   *         description: Trả về thông tin chuyên khoa thành công
+   *         description: Trả về thông tin bài viết thành công
    *       404:
-   *         description: Chuyên khoa không tồn tại
+   *         description: bài viết không tồn tại
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async getSpecialtyById(req: Request, res: Response) {
+  static async getNewsById(req: Request, res: Response) {
     try {
       const { id } = req.params
-      const result = await SpecialtyService.getSpecialtyById(id)
+      const result = await NewsService.getNewsById(id)
       if (!result) {
         res
           .status(HttpStatus.BAD_REQUEST)
-          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Chuyên khoa không tồn tại', null, true))
+          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Bài viết không tồn tại', null, true))
       } else {
-        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin chuyên khoa thành công', result))
+        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin bài viết thành công', result))
       }
     } catch (error: any) {
       res
@@ -163,12 +171,12 @@ export class SpecialtyController {
 
   /**
    * @swagger
-   * /api/specialty/update/{id}:
+   * /api/news/update/{id}:
    *   put:
-   *     summary: Cập nhật chuyên khoa
-   *     description: API để cập nhật thông tin chuyên khoa
+   *     summary: Cập nhật bài viết
+   *     description: API để cập nhật thông tin bài viết
    *     tags:
-   *       - Specialty
+   *       - News
    *     parameters:
    *       - in: path
    *         name: id
@@ -184,6 +192,10 @@ export class SpecialtyController {
    *             properties:
    *               name:
    *                 type: string
+   *               description:
+   *                 type: string
+   *               type:
+   *                 type: string
    *               file:
    *                 type: string
    *                 format: binary
@@ -195,19 +207,18 @@ export class SpecialtyController {
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async updateSpecialty(req: Request, res: Response) {
+  static async updateNews(req: Request, res: Response) {
     try {
       const { id } = req.params
-      const { name } = req.body
+      const body: AddNewsType = req.body
       const file = req.file
-
-      if (!name) {
-        res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Tên chuyên khoa là bắt buộc', null, true))
+      if (!body.name || !body.description || !body.type) {
+        res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Các trường đều không được để trống', null, true))
         return
       }
 
-      const result = await SpecialtyService.updateSpecialty(id, name, file)
-      res.json(apiResponse(HttpStatus.OK, 'Cập nhật chuyên khoa thành công', result))
+      const result = await NewsService.updateNews(id, body, file)
+      res.json(apiResponse(HttpStatus.OK, 'Cập nhật bài viết thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -217,12 +228,12 @@ export class SpecialtyController {
 
   /**
    * @swagger
-   * /api/specialty/delete/{id}:
+   * /api/news/delete/{id}:
    *   delete:
-   *     summary: Xóa chuyên khoa
-   *     description: API để xóa chuyên khoa theo ID
+   *     summary: Xóa bài viết
+   *     description: API để xóa bài viết theo ID
    *     tags:
-   *       - Specialty
+   *       - News
    *     parameters:
    *       - in: path
    *         name: id
@@ -231,17 +242,17 @@ export class SpecialtyController {
    *           type: string
    *     responses:
    *       200:
-   *         description: Xóa chuyên khoa thành công
+   *         description: Xóa bài viết thành công
    *       404:
-   *         description: Chuyên khoa không tồn tại
+   *         description: Bài viết không tồn tại
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async deleteSpecialty(req: Request, res: Response) {
+  static async deleteNews(req: Request, res: Response) {
     try {
       const { id } = req.params
-      await SpecialtyService.deleteSpecialty(id)
-      res.json(apiResponse(HttpStatus.OK, 'Xóa chuyên khoa thành công', null))
+      await NewsService.deleteNews(id)
+      res.json(apiResponse(HttpStatus.OK, 'Xóa bài viết thành công', null))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
