@@ -14,42 +14,42 @@ export class UserController {
    *     tags:
    *       - User  
    *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Trang hiện tại
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Số lượng người dùng trên mỗi trang
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Từ khóa tìm kiếm (userName, email, phone)
- *       - in: query
- *         name: sort
- *         schema:
- *           type: string
- *         description: Trường để sắp xếp
- *       - in: query
- *         name: order
- *         schema:
- *           type: string
- *           enum: [ASC, DESC]
- *         description: Thứ tự sắp xếp
- *     responses:
- *       200:
- *         description: Lấy danh sách người dùng thành công
- *       500:
- *         description: Lỗi máy chủ
- */
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *         description: Trang hiện tại
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *         description: Số lượng người dùng trên mỗi trang
+   *       - in: query
+   *         name: search
+   *         schema:
+   *           type: string
+   *         description: Từ khóa tìm kiếm (userName, email, phone)
+   *       - in: query
+   *         name: sort
+   *         schema:
+   *           type: string
+   *         description: Trường để sắp xếp
+   *       - in: query
+   *         name: order
+   *         schema:
+   *           type: string
+   *           enum: [ASC, DESC]
+   *         description: Thứ tự sắp xếp
+   *     responses:
+   *       200:
+   *         description: Lấy danh sách người dùng thành công
+   *       500:
+   *         description: Lỗi máy chủ
+   */
 
   static async handleGetAllUsers(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = '', sort = 'createdAt', order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort = 'createdAt', order = 'DESC' } = req.query
 
       const result = await UserService.getUsers(
         Number(page),
@@ -57,13 +57,13 @@ export class UserController {
         String(search),
         String(sort),
         String(order)
-      );
+      )
 
-      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách người dùng thành công', result));
+      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách người dùng thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
 
@@ -102,18 +102,26 @@ export class UserController {
    */
   static async handleUpdateUserBySelf(req: Request, res: Response) {
     try {
+
       const userId = req.user?.id;
 
       const updateData: updateUserBySelfType = req.body
       const updatedUser = await UserService.updateUserBySelf(userId, updateData);
 
+
       if (!updatedUser) {
-        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", null, true));
-        return;
+        res
+          .status(HttpStatus.NOT_FOUND)
+          .json(apiResponse(HttpStatus.NOT_FOUND, 'Không tìm thấy người dùng', null, true))
+        return
       }
-      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
+      res
+        .status(HttpStatus.OK)
+        .json(apiResponse(HttpStatus.OK, 'Cập nhật thông tin người dùng thành công', updatedUser))
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, 'Lỗi máy chủ', null, true))
     }
   }
 
@@ -209,11 +217,15 @@ export class UserController {
     try {
       const { phone } = req.params
       if (!phone)
-        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Người dùng không tồn tại", null, true));
+
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Người dùng không tồn tại', null, true))
       const deletedUser = await UserService.deleteUser(phone as string)
-      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Xóa người dùng thành công", deletedUser));
+      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', deletedUser))
+
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, 'Lỗi máy chủ', null, true))
     }
   }
 
@@ -264,4 +276,3 @@ export class UserController {
     }
   }
 }
-

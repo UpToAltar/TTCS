@@ -68,7 +68,7 @@ export const isDoctor: any = (req: Request, res: Response, next: NextFunction) =
         .json(apiResponse(HttpStatus.UNAUTHORIZED, 'Bạn chưa đăng nhập!', null, true))
     }
 
-    // Kiểm tra role có phải Admin không
+    // Kiểm tra role có phải Doctor không
     if (req.user.role !== 'Doctor') {
       return res
         .status(HttpStatus.FORBIDDEN)
@@ -76,6 +76,31 @@ export const isDoctor: any = (req: Request, res: Response, next: NextFunction) =
     }
 
     // Nếu là Admin thì cho phép tiếp tục
+    next()
+  } catch (error: any) {
+    return res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+  }
+}
+
+export const isAdminOrDoctor: any = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Kiểm tra user có trong request không (do middleware xác thực trước đó gán vào)
+    if (!req.user) {
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json(apiResponse(HttpStatus.UNAUTHORIZED, 'Bạn chưa đăng nhập!', null, true))
+    }
+
+    // Kiểm tra role có phải Admin hoặc Doctor không
+    if (req.user.role !== 'Admin' && req.user.role !== 'Doctor') {
+      return res
+        .status(HttpStatus.FORBIDDEN)
+        .json(apiResponse(HttpStatus.FORBIDDEN, 'Chỉ Admin hoặc bác sĩ có quyền truy cập!', null, true))
+    }
+
+    // Nếu là Admin hoặc Doctor thì cho phép tiếp tục
     next()
   } catch (error: any) {
     return res

@@ -18,16 +18,6 @@ export class Booking extends Model {
   @BelongsTo(() => User)
   patient!: User
 
-  @ForeignKey(() => Doctor)
-  @Column(DataType.UUID)
-  doctorId!: string
-
-  @BelongsTo(() => Doctor)
-  doctor!: Doctor
-
-  @Column(DataType.DATE)
-  date!: Date
-
   @ForeignKey(() => TimeSlot)
   @Column(DataType.UUID)
   timeSlotId!: string

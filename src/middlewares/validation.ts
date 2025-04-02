@@ -70,7 +70,6 @@ export const validateLogin = (): ValidationChain[] => [
     .isLength({ min: 6 })
     .withMessage('Mật khẩu phải có ít nhất 6 ký tự')
 ]
-
 /**
  * Middleware xử lý lỗi validation
  */

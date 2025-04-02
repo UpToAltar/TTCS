@@ -1,3 +1,4 @@
+
 import { createNewUserType, updateUserByAdminType, updateUserBySelfType } from "~/type/user.type";
 import { Op } from 'sequelize'
 import { User } from '~/models/User'
@@ -8,14 +9,17 @@ import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
 
 
+
 export class UserService {
   static async getUsers(page: number, limit: number, search: string, sort: string, order: string) {
     try {
-      const offset = (page - 1) * limit;
+      const offset = (page - 1) * limit
 
       // Điều kiện tìm kiếm theo userName, email, phone
       const whereCondition: any = {
+
         status: true, // Chỉ lấy người dùng có status = true
+
       }
 
       if (search) {
@@ -23,23 +27,25 @@ export class UserService {
           { userName: { [Op.like]: `%${search}%` } },
           { email: { [Op.like]: `%${search}%` } },
           { phone: { [Op.like]: `%${search}%` } }
-        ];
+        ]
       }
 
       // Tìm và đếm số lượng user
       const { rows, count } = await User.findAndCountAll({
 
         where: whereCondition,
-        include: [{
-          model: Role,
-          as: 'role',
-          where: { name: 'User' }, // Lọc chỉ lấy role = "User"
-          attributes: ['name']
-        }],
+        include: [
+          {
+            model: Role,
+            as: 'role',
+            where: { name: 'User' }, // Lọc chỉ lấy role = "User"
+            attributes: ['name']
+          }
+        ],
         order: [[sort, order]],
         limit,
         offset
-      });
+      })
 
       // Trả về kết quả
       return {
@@ -53,14 +59,16 @@ export class UserService {
           address: user?.dataValues.address,
           roleName: user?.role?.dataValues.name, // Lấy tên role từ bảng Role
         }))
-      };
+      }
     } catch (error: any) {
-      throw new Error(error.message || 'Lỗi khi lấy danh sách người dùng');
+      throw new Error(error.message || 'Lỗi khi lấy danh sách người dùng')
     }
   }
   static async creatUserbyAdmin(body: createNewUserType) {
     try {
+
       const existingUser = await User.findOne({
+
         where: {
           [Op.or]: [{ email: body.email }, { phone: body.phone }]
         }
@@ -104,6 +112,7 @@ export class UserService {
           degree: '',
           description: ''
         });
+
       }
       return {
         message: 'Thêm mới người dùng thành công',
@@ -116,7 +125,7 @@ export class UserService {
             : null,
           gender: user?.dataValues.gender,
           address: user?.dataValues.address,
-          roleName: body.rolename,
+          roleName: body.rolename
         }
       };
     } catch (error: any) {
@@ -219,22 +228,22 @@ export class UserService {
           address: user?.dataValues.address,
           roleName: body.rolename,
         }
+
       }
     } catch (error) {
-      throw new Error('Lỗi khi cập nhật người dùng');
+      throw new Error('Lỗi khi cập nhật người dùng')
     }
   }
 
-  // Xóa người dùng 
+  // Xóa người dùng
   static async deleteUser(phone: string) {
     const user = await User.findOne({
       where: { phone }
     })
     if (!user) {
-      throw new Error('Người dùng không tồn tại');
+      throw new Error('Người dùng không tồn tại')
     }
-    await user.destroy();
-    return { message: 'Người dùng đã được xóa thành công' };
+    await user.destroy()
+    return { message: 'Người dùng đã được xóa thành công' }
   }
-
 }
