@@ -20,12 +20,13 @@ export class Notification extends Model {
   @Column(DataType.UUID)
   id: string = ''
 
-  @AllowNull(false)
+  @Column(DataType.STRING)
+  title!: string
+
   @Column(DataType.STRING)
   content!: string
 
   @ForeignKey(() => User) // Khóa ngoại đến bảng Users
-  @AllowNull(false)
   @Column(DataType.UUID)
   userId!: string
 
