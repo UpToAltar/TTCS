@@ -53,7 +53,7 @@ export class User extends Model {
 
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
-  roleId?: string
+  roleId!: string
 
   @Column(DataType.BOOLEAN)
   status?: boolean

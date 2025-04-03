@@ -28,6 +28,9 @@ export class Doctor extends Model {
   @Column(DataType.TEXT)
   description?: string
 
+  // Thêm cột degree (bằng cấp)
+  @Column(DataType.STRING)
+  degree?: string;
 
   @HasMany(() => TimeSlot)
   timeSlot?: TimeSlot[]

@@ -64,6 +64,36 @@ export class UserService {
       throw new Error(error.message || 'Lỗi khi lấy danh sách người dùng')
     }
   }
+  static async getUserById(id: string) {
+    try {
+      // Tìm người dùng theo ID
+      const user = await User.findByPk(id);
+      if (!user) {
+        return null; // Trả về null nếu không tìm thấy user
+      }
+
+      // Tìm vai trò của người dùng
+      const role = await Role.findOne({
+        where: { id: user.roleId }
+      });
+
+      if (!role) {
+        throw new Error(`Không tìm thấy vai trò cho user có ID: ${id}`);
+      }
+      return user
+        ? {
+          id: user?.dataValues.id,
+          userName: user?.dataValues.userName,
+          email: user?.dataValues.email,
+          birthDate: user?.dataValues.birthDate,
+          gender: user?.dataValues.gender,
+          address: user?.dataValues.address
+        }
+        : null
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
   static async creatUserbyAdmin(body: createNewUserType) {
     try {
 
@@ -80,6 +110,8 @@ export class UserService {
       const role = await Role.findOne({
         where: { name: body.rolename }
       })
+      console.log('Role:', role);
+      console.log('Role ID:', role?.dataValues.id);
       // Băm mật khẩu
       const salt = await bcrypt.genSalt(10)
       const hashedPassword = await bcrypt.hash(body.phone, salt) //Mặc định password = phone 
@@ -88,7 +120,7 @@ export class UserService {
         ? moment(body.birthDate, 'DD-MM-YYYY').format('YYYY-MM-DD')
         : null;
       if (!role) {
-        throw new Error(`Không tìm thấy vai trò: ${body.rolename}`);
+        throw new Error(`Không tìm thấy vai trò`);
       }
 
       const user = await User.create({
@@ -100,7 +132,7 @@ export class UserService {
         birthDate: formattedBirthDate,
         gender: body.gender,
         address: body.address,
-        roleID: role.id,
+        roleID: role?.dataValues.id,
         status: true // tài khoản đã được kích hoạt 
       })
       // Nếu user có vai trò là "doctor", tạo thêm bản ghi trong bảng Doctor
@@ -108,11 +140,10 @@ export class UserService {
         await Doctor.create({
           id: uuidv4(),
           userId: user.id, // Liên kết với user vừa tạo
-          specialtyId: null,
+          specialtyId: '',
           degree: '',
           description: ''
         });
-
       }
       return {
         message: 'Thêm mới người dùng thành công',
@@ -140,12 +171,7 @@ export class UserService {
         ? moment(body.birthDate, 'DD-MM-YYYY').format('YYYY-MM-DD')
         : null;
       // Kiểm tra email hoặc số điện thoại đã tồn tại
-      const user = await User.findOne({
-        where: {
-          [Op.or]: [{ email: body.email }, { phone: body.phone }]
-        }
-      })
-
+      const user = await User.findByPk(userId)
       if (user) {
         await user.update({
           userName: body.userName,
@@ -169,12 +195,10 @@ export class UserService {
       throw new Error('Lỗi khi cập nhật người dùng');
     }
   }
-  static async updateUserByAdmin(phone: string, body: updateUserByAdminType) {
+  static async updateUserByAdmin(id: string, body: updateUserByAdminType) {
     try {
       // Kiểm tra Số điện thoại đã tồn tại
-      const user = await User.findOne({
-        where: { phone: phone }
-      })
+      const user = await User.findByPk(id)
       if (!user) {
         throw new Error('Người dùng không tồn tại')
       }
@@ -188,7 +212,6 @@ export class UserService {
           id: { [Op.ne]: user.id } // Loại trừ chính người dùng đang cập nhật
         }
       })
-
       if (existingUser) {
         throw new Error('Số điện thoại hoặc email đã được sử dụng bởi người dùng khác');
       }
@@ -217,29 +240,24 @@ export class UserService {
         })
       }
       return {
-        user: {
-          phone: user?.dataValues.phone,
-          email: user?.dataValues.email,
-          userName: user?.dataValues.userName,
-          birthDate: user?.dataValues.birthDate
-            ? moment(user?.dataValues.birthDate).format('DD-MM-YYYY') // Hiển thị lại dd-mm-yyyy
-            : null,
-          gender: user?.dataValues.gender,
-          address: user?.dataValues.address,
-          roleName: body.rolename,
-        }
-
-      }
+        phone: user?.dataValues.phone,
+        email: user?.dataValues.email,
+        userName: user?.dataValues.userName,
+        birthDate: user?.dataValues.birthDate
+          ? moment(user?.dataValues.birthDate).format('DD-MM-YYYY') // Hiển thị lại dd-mm-yyyy
+          : null,
+        gender: user?.dataValues.gender,
+        address: user?.dataValues.address,
+        roleName: user?.role?.dataValues.name,
+      };
     } catch (error) {
       throw new Error('Lỗi khi cập nhật người dùng')
     }
   }
 
   // Xóa người dùng
-  static async deleteUser(phone: string) {
-    const user = await User.findOne({
-      where: { phone }
-    })
+  static async deleteUser(id: string) {
+    const user = await User.findByPk(id)
     if (!user) {
       throw new Error('Người dùng không tồn tại')
     }

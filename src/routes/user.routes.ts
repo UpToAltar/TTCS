@@ -5,10 +5,11 @@ import { validateUpdatUserBySelf, validateUserByAdmin } from '~/middlewares/user
 import { handleValidationErrors } from '~/middlewares/validation'
 const router = Router()
 
-router.get('/get-all', authentication, isAdmin, UserController.handleGetAllUsers)
-router.post('/update-by-self', authentication, validateUpdatUserBySelf(), handleValidationErrors, UserController.handleUpdateUserBySelf)
-router.put('/update/:phone', authentication, isAdmin, validateUserByAdmin(), handleValidationErrors, UserController.handleUpdateUserByAdmin)
-router.delete('/delete/:phone', authentication, isAdmin, UserController.handleDeleteUser)
-router.post('/create-user', authentication, isAdmin, validateUserByAdmin(), handleValidationErrors, UserController.handleCreateUserByAdmin)
+router.get('/', authentication, isAdmin, UserController.handleGetAllUsers)
+router.get('/get:id', authentication, UserController.getUserById)
+router.put('/update-by-self', authentication, validateUpdatUserBySelf(), handleValidationErrors, UserController.handleUpdateUserBySelf)
+router.put('/update/:id', authentication, isAdmin, validateUserByAdmin(), handleValidationErrors, UserController.handleUpdateUserByAdmin)
+router.delete('/delete/:id', authentication, isAdmin, UserController.handleDeleteUser)
+router.post('/create-user', UserController.handleCreateUserByAdmin)
 
 export default router
