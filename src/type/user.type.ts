@@ -8,7 +8,6 @@ export type updateUserBySelfType = {
 }
 export type updateUserByAdminType = {
 
-  rolename: string
   userName: string | null
   email: string | null
   phone: string | null

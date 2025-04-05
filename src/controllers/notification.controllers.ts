@@ -29,13 +29,11 @@ export class NotificationController {
    *                 type: string
    *               content:
    *                 type: string
-   *               userID:
+   *               userId:
    *                 type: string
    *     responses:
    *       201:
    *         description: Thêm mới thành công
-   *       400:
-   *         description: Dữ liệu không hợp lệ
    *       500:
    *         description: Lỗi máy chủ
    */

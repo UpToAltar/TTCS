@@ -3,11 +3,3 @@ export type AddNotificationType = {
     content: string
     userId: string
 }
-
-
-export type UpdateServiceType = {
-    id: string
-    name: string
-    description: string
-    price: number
-}
