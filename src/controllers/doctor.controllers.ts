@@ -94,13 +94,16 @@ export class DoctorController {
       const { id } = req.params;
       const doctor = await DoctorService.getDoctorById(id);
       if (!doctor) {
-        return res
+        res
           .status(HttpStatus.NOT_FOUND)
           .json(apiResponse(HttpStatus.NOT_FOUND, 'Bác sĩ không tồn tại', null, true));
       }
-      return res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin bác sĩ thành công', doctor));
-    } catch (error: any) {
-      return res
+      else {
+        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin bác sĩ thành công', doctor));
+      }
+    }
+    catch (error: any) {
+      res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
     }
@@ -140,21 +143,24 @@ export class DoctorController {
 
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(HttpStatus.UNAUTHORIZED).json(
+        res.status(HttpStatus.UNAUTHORIZED).json(
           apiResponse(HttpStatus.UNAUTHORIZED, "Unauthorized - User ID is missing", null, true)
         )
       }
-      const updateData: EditDoctorType = req.body
-      const updatedUser = await DoctorService.updateDoctorBySelf(userId, updateData);
-      if (!updatedUser) {
-        res
-          .status(HttpStatus.NOT_FOUND)
-          .json(apiResponse(HttpStatus.NOT_FOUND, 'Không tìm thấy người dùng', null, true))
-        return
+      else {
+        const updateData: EditDoctorType = req.body
+        const updatedUser = await DoctorService.updateDoctorBySelf(userId, updateData);
+        if (!updatedUser) {
+          res
+            .status(HttpStatus.NOT_FOUND)
+            .json(apiResponse(HttpStatus.NOT_FOUND, 'Không tìm thấy người dùng', null, true))
+        }
+        else {
+          res
+            .status(HttpStatus.OK)
+            .json(apiResponse(HttpStatus.OK, 'Cập nhật thông tin người dùng thành công', updatedUser))
+        }
       }
-      res
-        .status(HttpStatus.OK)
-        .json(apiResponse(HttpStatus.OK, 'Cập nhật thông tin người dùng thành công', updatedUser))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -171,7 +177,7 @@ export class DoctorController {
    *     tags:
    *       - Doctor
    *     parameters:
-   *       - in: query
+   *       - in: path
    *         name: id
    *         required: true
    *         schema:
@@ -205,19 +211,21 @@ export class DoctorController {
       const { id } = req.params;
       const userData: EditDoctorType = req.body;
       if (!id) {
-        return res.status(HttpStatus.BAD_REQUEST).json(
-          apiResponse(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ", null, true)
-        )
+        res.status(HttpStatus.BAD_REQUEST)
+          .json(apiResponse(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ", null, true)
+          )
       }
-      const updatedUser = await DoctorService.updateDoctorbyAdmin(id as string, userData)
-
-      if (!updatedUser) {
-        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy bác sĩ hoặc vai trò", null, true));
+      else {
+        const updatedUser = await DoctorService.updateDoctorbyAdmin(id, userData)
+        if (!updatedUser) {
+          res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy bác sĩ hoặc vai trò", null, true))
+        }
+        else {
+          res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin bác sĩ thành công", updatedUser))
+        }
       }
-
-      return res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin bác sĩ thành công", updatedUser));
     } catch (error: any) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
     }
   }
   /**
@@ -231,9 +239,9 @@ export class DoctorController {
    *     parameters:
    *       - in: path
    *         name: id
+   *         required: true
    *         schema:
    *           type: string
-   *         required: true
    *         description: Id người dùng
    *     responses:
    *       200:
@@ -247,13 +255,14 @@ export class DoctorController {
   static async handleDeleteUser(req: Request, res: Response) {
     try {
       const { id } = req.params
+      console.log(id)
       if (!id) {
-        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Người dùng không tồn tại', null, true));
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Người dùng không tồn tại', null, true));
       }
-
-      const deletedUser = await DoctorService.deleteDoctor(id as string);
-      return res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', deletedUser));
-
+      else {
+        await DoctorService.deleteDoctor(id);
+        res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', null));
+      }
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
