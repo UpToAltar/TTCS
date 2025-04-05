@@ -130,7 +130,7 @@ export class UserController {
    * /api/users/update/{id}:
    *   put:
    *     summary: Cập nhật thông tin người dùng
-   *     description: Admin có thể cập nhật dữ liệu người dùng, bao gồm cả vai trò
+   *     description: Admin có thể cập nhật dữ liệu người dùng
    *     tags:
    *       - User
    *     parameters:
@@ -156,8 +156,6 @@ export class UserController {
    *                 type: boolean
    *               address:
    *                 type: string
-   *               rolename:
-   *                 type: string
    *     responses:
    *       200:
    *         description: Cập nhật thành công
@@ -170,22 +168,24 @@ export class UserController {
    */
   static async handleUpdateUserByAdmin(req: Request, res: Response) {
     try {
-      const { phone } = req.params;
+      const { id } = req.params;
       const userData: updateUserByAdminType = req.body;
-      if (!phone) {
-        return res.status(HttpStatus.BAD_REQUEST).json(
+      if (!id) {
+        res.status(HttpStatus.BAD_REQUEST).json(
           apiResponse(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ", null, true)
         )
       }
-      const updatedUser = await UserService.updateUserByAdmin(phone as string, userData)
-
-      if (!updatedUser) {
-        return res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng hoặc vai trò", null, true));
+      else {
+        const updatedUser = await UserService.updateUserByAdmin(id as string, userData)
+        if (!updatedUser) {
+          res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng hoặc vai trò", null, true));
+        }
+        else
+          res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
       }
 
-      return res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
     } catch (error: any) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
     }
   }
 
@@ -194,16 +194,16 @@ export class UserController {
    * /api/users/delete/{id}:
    *   delete:
    *     summary: Xóa người dùng
-   *     description: Xóa một người dùng dựa trên số điện thoại
+   *     description: Xóa một người dùng dựa trên id
    *     tags:
    *       - User
    *     parameters:
-   *       - in: query
+   *       - in: path
    *         name: id
+   *         required: true
    *         schema:
    *           type: string
-   *         required: true
-   *         description: Số điện thoại người dùng
+   *         description: Id người dùng
    *     responses:
    *       200:
    *         description: Xóa thành công
@@ -216,11 +216,9 @@ export class UserController {
   static async handleDeleteUser(req: Request, res: Response) {
     try {
       const { id } = req.params
-      if (!id)
-
-        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Người dùng không tồn tại', null, true))
-      const deletedUser = await UserService.deleteUser(id as string)
-      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', deletedUser))
+      console.log(id)
+      await UserService.deleteUser(id)
+      res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', null))
 
     } catch (error: any) {
       res
@@ -308,7 +306,7 @@ export class UserController {
           .status(HttpStatus.BAD_REQUEST)
           .json(apiResponse(HttpStatus.BAD_REQUEST, 'Người dùng không tồn tại', null, true))
       } else {
-        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin gười dùng thành công', result))
+        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin người dùng thành công', result))
       }
     } catch (error: any) {
       res
