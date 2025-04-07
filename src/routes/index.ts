@@ -6,6 +6,8 @@ import doctorRoutes from './doctor.routes'
 import specialtyRoutes from './specialty.routes'
 import newsRoutes from './news.routes'
 import notificationRoutes from './notification.routes'
+import timeSlotRoutes from './timeSlot.routes'
+import recordRoutes from './record.routes'
 const router = Router()
 
 router.use('/users', userRoutes)
@@ -15,5 +17,7 @@ router.use('/doctor', doctorRoutes)
 router.use('/specialty', specialtyRoutes)
 router.use('/news', newsRoutes)
 router.use('/notification', notificationRoutes)
+router.use('/timeSlot', timeSlotRoutes)
+router.use('/record', recordRoutes)
 
 export default router

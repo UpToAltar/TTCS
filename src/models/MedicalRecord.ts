@@ -1,5 +1,4 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo } from 'sequelize-typescript'
-import { User } from './User'
 import { Doctor } from './Doctor'
 
 @Table({ timestamps: true })

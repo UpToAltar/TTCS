@@ -16,10 +16,10 @@ export class TimeSlot extends Model {
   doctor!: Doctor
 
   @Column(DataType.DATE)
-  startTime!: Date
+  startDate!: Date
 
   @Column(DataType.DATE)
-  endTime!: Date
+  endDate!: Date
 
   @Column(DataType.BOOLEAN)
   status?: boolean
