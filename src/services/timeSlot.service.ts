@@ -4,13 +4,23 @@ import { addTimeSlotType } from '~/type/timeSlot.type'
 import moment from 'moment'
 import { TimeSlot } from '~/models/TimeSlot'
 import { Doctor } from '~/models/Doctor'
+import { validateAuthorization } from '~/utils/validateAuthorization'
 
 export class TimeSlotService {
   static async addTimeSlot(body: addTimeSlotType, user: any) {
     try {
+      //Check bác sĩ có tồn tại không
+      const doctor = await Doctor.findOne({
+        where: {
+          id: body.doctorId
+        }
+      })
+      if (!doctor) {
+        throw new Error('Bác sĩ không tồn tại')
+      }
       //Check quyền
-      if (user.role != 'Admin' && user.Role == 'Doctor' && user.id != body.doctorId) {
-        throw new Error('Bạn không có quyền tạo thời gian khám')
+      if (!validateAuthorization(user, doctor?.dataValues.userId)) {
+        throw new Error('Bạn không có quyền')
       }
       //Format lại thời gian
       const startTime = moment(body.startDate, 'DD/MM/YYYY HH:mm:ss').toDate()
@@ -36,15 +46,7 @@ export class TimeSlotService {
       if (existingTimeSlot) {
         throw new Error('Thời gian đã tồn tại')
       }
-      //Check bác sĩ có tồn tại không
-      const doctor = await Doctor.findOne({
-        where: {
-          id: body.doctorId
-        }
-      })
-      if (!doctor) {
-        throw new Error('Bác sĩ không tồn tại')
-      }
+
       //Tạo mới thời gian
       const newTimeSlot = await TimeSlot.create({
         doctorId: body.doctorId,
@@ -66,9 +68,18 @@ export class TimeSlotService {
 
   static async updateTimeSlot(id: string, body: addTimeSlotType, user: any) {
     try {
+      //Check bác sĩ có tồn tại không
+      const doctor = await Doctor.findOne({
+        where: {
+          id: body.doctorId
+        }
+      })
+      if (!doctor) {
+        throw new Error('Bác sĩ không tồn tại')
+      }
       //Check quyền
-      if (user.role != 'Admin' && user.Role == 'Doctor' && user.id != body.doctorId) {
-        throw new Error('Bạn không có quyền tạo thời gian khám')
+      if (!validateAuthorization(user, doctor?.dataValues.userId)) {
+        throw new Error('Bạn không có quyền')
       }
       //Format lại thời gian
       const startTime = moment(body.startDate, 'DD/MM/YYYY HH:mm:ss').toDate()
@@ -95,15 +106,7 @@ export class TimeSlotService {
       if (existingTimeSlot) {
         throw new Error('Thời gian đã tồn tại')
       }
-      //Check bác sĩ có tồn tại không
-      const doctor = await Doctor.findOne({
-        where: {
-          id: body.doctorId
-        }
-      })
-      if (!doctor) {
-        throw new Error('Bác sĩ không tồn tại')
-      }
+
       //Update thời gian
       const updatedTimeSlot = await TimeSlot.update(
         {
@@ -140,17 +143,24 @@ export class TimeSlotService {
 
   static async deleteTimeSlot(id: string, user: any) {
     try {
-      //Check quyền
-      if (user.role != 'Admin' && user.Role == 'Doctor' && user.id != id) {
-        throw new Error('Bạn không có quyền xóa thời gian khám')
-      }
       const timeSlot = await TimeSlot.findOne({
         where: {
           id
         }
       })
+
       if (!timeSlot) {
         throw new Error('Thời gian khám không tồn tại')
+      }
+      //Check bác sĩ có tồn tại không
+      const doctor = await Doctor.findOne({
+        where: {
+          id: timeSlot?.dataValues.doctorId
+        }
+      })
+      //Check quyền
+      if (!validateAuthorization(user, doctor?.dataValues.userId)) {
+        throw new Error('Bạn không có quyền')
       }
       await TimeSlot.destroy({
         where: {
@@ -186,10 +196,6 @@ export class TimeSlotService {
 
   static async getAllTimeSlotOfDoctorByDay(doctorId: string, date: string, user: any) {
     try {
-      //Check quyền
-      if (user.role != 'Admin' && user.Role == 'Doctor' && user.id != doctorId) {
-        throw new Error('Bạn không có quyền xem thời gian khám')
-      }
       //Check bác sĩ có tồn tại không
       const doctor = await Doctor.findOne({
         where: {
@@ -236,10 +242,6 @@ export class TimeSlotService {
   //Thêm mặc định thời gian khám cho bác sĩ (30 phút mỗi ca , 14 ca/ngày bắt đầu từ 8h sáng đến 6h chiều, nghỉ trưa từ 12h đến 13h)
   static async addDefaultTimeSlot(doctorId: string, user: any) {
     try {
-      //Check quyền
-      if (user.role != 'Admin' && user.Role == 'Doctor' && user.id != doctorId) {
-        throw new Error('Bạn không có quyền tạo thời gian khám')
-      }
       //Check bác sĩ có tồn tại không
       const doctor = await Doctor.findOne({
         where: {
@@ -249,6 +251,11 @@ export class TimeSlotService {
       if (!doctor) {
         throw new Error('Bác sĩ không tồn tại')
       }
+      //Check quyền
+      if (!validateAuthorization(user, doctor?.dataValues.userId)) {
+        throw new Error('Bạn không có quyền')
+      }
+
       //Check ngày hôm nay đã có thời gian khám chưa
       const startDate = moment().startOf('day').toDate()
       const endDate = moment().endOf('day').toDate()

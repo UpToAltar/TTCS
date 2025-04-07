@@ -59,10 +59,10 @@ export class User extends Model {
   status?: boolean
 
   @Column(DataType.STRING)
-  resetPasswordOTP?: string // Mã OTP reset mật khẩu
+  resetPasswordOTP?: string
 
   @Column(DataType.DATE)
-  resetPasswordExpires?: Date // Thời gian hết hạn của OTP
+  resetPasswordExpires?: Date
 
   @BelongsTo(() => Role)
   role!: Role
