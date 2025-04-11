@@ -16,7 +16,7 @@ export type updateUserByAdminType = {
   address: string | null
 }
 export type createNewUserType = {
-  rolename: string
+  roleName: string
   userName: string
   email: string
   phone: string
