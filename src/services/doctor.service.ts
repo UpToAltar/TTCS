@@ -75,7 +75,7 @@ export class DoctorService {
         )
       }
     } catch (error: any) {
-      throw new Error(error.message || 'Lỗi khi lấy danh sách bác sĩ')
+      throw new Error(error.message)
     }
   }
 

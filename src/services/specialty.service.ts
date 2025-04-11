@@ -123,7 +123,7 @@ export class SpecialtyService {
         },
         {
           model: User,
-          attributes: ['id', 'userName', 'email', 'phone', 'address']
+          attributes: ['id', 'userName', 'email', 'phone', 'address', 'img'],
         }
       ]
     })
@@ -145,7 +145,8 @@ export class SpecialtyService {
           specialtyId: doctor?.dataValues.specialty?.dataValues.id,
           specialtyName: doctor?.dataValues.specialty?.dataValues.name,
           degree: doctor?.dataValues.degree,
-          description: doctor?.dataValues.description
+          description: doctor?.dataValues.description,
+          img: doctor?.dataValues.user?.dataValues.img
         }
       })
     }
