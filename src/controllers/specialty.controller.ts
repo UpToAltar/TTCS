@@ -248,4 +248,44 @@ export class SpecialtyController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
+
+  /**
+   * @swagger
+   * /api/specialty/getAllDoctor/{id}:
+   *   get:
+   *     summary: Lấy bác sĩ của chuyên khoa
+   *     description: API lấy thông tin bác sĩ của một chuyên khoa
+   *     tags:
+   *       - Specialty
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Trả về thông tin bác sĩ thành công
+   *       404:
+   *         description: Chuyên khoa không tồn tại
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getDoctorBySpecialtyId(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      const result = await SpecialtyService.getAllDoctorBySpecialty(id)
+      if (!result) {
+        res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Chuyên khoa không tồn tại', null, true))
+      } else {
+        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin bác sĩ thành công', result))
+      }
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 }
