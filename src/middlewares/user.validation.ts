@@ -68,8 +68,8 @@ export const validateUserByAdmin = (): ValidationChain[] => [
   body('birthDate')
     .notEmpty()
     .withMessage('Ngày sinh không được để trống')
-    .matches(/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/)
-    .withMessage('Ngày sinh không hợp lệ, định dạng đúng là dd-mm-yyyy'),
+    .matches(/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/)
+    .withMessage('Ngày sinh không hợp lệ, định dạng đúng là dd/mm/yyyy'),
 
   body('gender')
     .notEmpty()
