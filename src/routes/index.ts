@@ -8,6 +8,7 @@ import newsRoutes from './news.routes'
 import notificationRoutes from './notification.routes'
 import timeSlotRoutes from './timeSlot.routes'
 import recordRoutes from './record.routes'
+import bookingRoutes from './booking.routes'
 const router = Router()
 
 router.use('/users', userRoutes)
@@ -19,5 +20,6 @@ router.use('/news', newsRoutes)
 router.use('/notification', notificationRoutes)
 router.use('/timeSlot', timeSlotRoutes)
 router.use('/record', recordRoutes)
+router.use('/booking', bookingRoutes)
 
 export default router

@@ -99,14 +99,14 @@ export class UserService {
         throw new Error('Email hoặc số điện thoại đã tồn tại')
       }
       const role = await Role.findOne({
-        where: { name: body.rolename }
+        where: { name: body.roleName }
       })
       // Băm mật khẩu
       const salt = await bcrypt.genSalt(10)
       const hashedPassword = await bcrypt.hash(body.phone, salt) //Mặc định password = phone 
-      // Format birthDate từ dd-mm-yyyy sang yyyy-mm-dd
+      // Format birthDate từ dd/mm/yyyy sang yyyy-mm-dd
       const formattedBirthDate = body.birthDate
-        ? moment(body.birthDate, 'DD-MM-YYYY').format('YYYY-MM-DD')
+        ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
         : null;
       if (!role) {
         throw new Error(`Không tìm thấy vai trò`);
@@ -126,7 +126,7 @@ export class UserService {
       // Đảm bảo User đã được commit vào database trước khi tạo Doctor
       await user.reload();
       // Nếu user có vai trò là "doctor", tạo thêm bản ghi trong bảng Doctor
-      if (body.rolename === 'Doctor') {
+      if (body.roleName === 'Doctor') {
         await Doctor.create({
           id: uuidv4(),
           userId: user?.dataValues.id, // Liên kết với user vừa tạo
@@ -142,11 +142,11 @@ export class UserService {
           email: user?.dataValues.email,
           userName: user?.dataValues.userName,
           birthDate: user?.dataValues.birthDate
-            ? moment(user?.dataValues.birthDate).format('DD-MM-YYYY') // Hiển thị lại dd-mm-yyyy
+            ? moment(user?.dataValues.birthDate).format('DD/MM/YYYY') // Hiển thị lại dd-mm-yyyy
             : null,
           gender: user?.dataValues.gender,
           address: user?.dataValues.address,
-          roleName: body.rolename
+          roleName: body.roleName
         }
       };
     } catch (error: any) {
@@ -158,7 +158,7 @@ export class UserService {
   static async updateUserBySelf(userId: string, body: updateUserBySelfType) {
     try {
       const formattedBirthDate = body.birthDate
-        ? moment(body.birthDate, 'DD-MM-YYYY').format('YYYY-MM-DD')
+        ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
         : null;
       // Kiểm tra email hoặc số điện thoại đã tồn tại
       const user = await User.findByPk(userId)
@@ -175,7 +175,7 @@ export class UserService {
         user: {
           userName: user?.dataValues.userName,
           birthDate: user?.dataValues.birthDate
-            ? moment(user?.dataValues.birthDate).format('DD-MM-YYYY') // Hiển thị lại dd-mm-yyyy
+            ? moment(user?.dataValues.birthDate).format('DD/MM/YYYY') // Hiển thị lại dd-mm-yyyy
             : null,
           gender: user?.dataValues.gender,
           address: user?.dataValues.address,
@@ -205,9 +205,9 @@ export class UserService {
       if (existingUser) {
         throw new Error('Số điện thoại hoặc email đã được sử dụng bởi người dùng khác');
       }
-      // Format birthDate từ dd-mm-yyyy sang yyyy-mm-dd
+      // Format birthDate từ dd/mm/yyyy sang yyyy-mm-dd
       const formattedBirthDate = body.birthDate
-        ? moment(body.birthDate, 'DD-MM-YYYY').format('YYYY-MM-DD')
+        ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
         : null;
 
       if (user) {
@@ -225,7 +225,7 @@ export class UserService {
         email: user?.dataValues.email,
         userName: user?.dataValues.userName,
         birthDate: user?.dataValues.birthDate
-          ? moment(user?.dataValues.birthDate).format('DD-MM-YYYY') // Hiển thị lại dd-mm-yyyy
+          ? moment(user?.dataValues.birthDate).format('DD/MM/YYYY') // Hiển thị lại dd-mm-yyyy
           : null,
         gender: user?.dataValues.gender,
         address: user?.dataValues.address,
