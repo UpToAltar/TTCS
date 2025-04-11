@@ -12,7 +12,7 @@ export class UserController {
    *     summary: Lấy danh sách người dùng
    *     description: Trả về danh sách tất cả người dùng
    *     tags:
-   *       - User  
+   *       - User
    *     parameters:
    *       - in: query
    *         name: page
@@ -94,6 +94,8 @@ export class UserController {
    *                 type: boolean
    *               address:
    *                 type: string
+   *               img:
+   *                 type: string
    *     responses:
    *       200:
    *         description: Cập nhật thành công
@@ -102,12 +104,10 @@ export class UserController {
    */
   static async handleUpdateUserBySelf(req: Request, res: Response) {
     try {
-
-      const userId = req.user?.id;
+      const userId = req.user?.id
 
       const updateData: updateUserBySelfType = req.body
-      const updatedUser = await UserService.updateUserBySelf(userId, updateData);
-
+      const updatedUser = await UserService.updateUserBySelf(userId, updateData)
 
       if (!updatedUser) {
         res
@@ -121,7 +121,7 @@ export class UserController {
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, 'Lỗi máy chủ', null, true))
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
 
@@ -134,7 +134,7 @@ export class UserController {
    *     tags:
    *       - User
    *     parameters:
-   *       - in: query
+   *       - in: path
    *         name: id
    *         required: true
    *     requestBody:
@@ -156,6 +156,10 @@ export class UserController {
    *                 type: boolean
    *               address:
    *                 type: string
+   *               status:
+   *                 type: boolean
+   *               img:
+   *                 type: string
    *     responses:
    *       200:
    *         description: Cập nhật thành công
@@ -168,24 +172,26 @@ export class UserController {
    */
   static async handleUpdateUserByAdmin(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const userData: updateUserByAdminType = req.body;
+      const { id } = req.params
+      console.log('id', id)
+      const userData: updateUserByAdminType = req.body
       if (!id) {
-        res.status(HttpStatus.BAD_REQUEST).json(
-          apiResponse(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ", null, true)
-        )
-      }
-      else {
-        const updatedUser = await UserService.updateUserByAdmin(id as string, userData)
+        res.status(HttpStatus.BAD_REQUEST).json(apiResponse(HttpStatus.BAD_REQUEST, 'Dữ liệu không hợp lệ', null, true))
+      } else {
+        const updatedUser = await UserService.updateUserByAdmin(id, userData)
         if (!updatedUser) {
-          res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng hoặc vai trò", null, true));
-        }
-        else
-          res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin người dùng thành công", updatedUser));
+          res
+            .status(HttpStatus.NOT_FOUND)
+            .json(apiResponse(HttpStatus.NOT_FOUND, 'Không tìm thấy người dùng hoặc vai trò', null, true))
+        } else
+          res
+            .status(HttpStatus.OK)
+            .json(apiResponse(HttpStatus.OK, 'Cập nhật thông tin người dùng thành công', updatedUser))
       }
-
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
 
@@ -219,58 +225,61 @@ export class UserController {
       console.log(id)
       await UserService.deleteUser(id)
       res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', null))
-
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, 'Lỗi máy chủ', null, true))
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
 
   /**
- * @swagger
- * /api/users/create-user:
- *   post:
- *     summary: Tạo người dùng mới bởi admin
- *     description: Admin có thể tạo tài khoản người dùng mới
- *     tags:
- *       - User
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userName:
- *                 type: string
- *               email:
- *                 type: string
- *               phone:
- *                 type: string
- *               birthDate:
- *                 type: string
- *               gender:
- *                 type: boolean
- *               address:
- *                 type: string
- *               rolename:
- *                 type: string
- *     responses:
- *       201:
- *         description: Tạo người dùng thành công
- *       400:
- *         description: Dữ liệu không hợp lệ hoặc đã tồn tại
- *       500:
- *         description: Lỗi máy chủ
- */
+   * @swagger
+   * /api/users/create-user:
+   *   post:
+   *     summary: Tạo người dùng mới bởi admin
+   *     description: Admin có thể tạo tài khoản người dùng mới
+   *     tags:
+   *       - User
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userName:
+   *                 type: string
+   *               email:
+   *                 type: string
+   *               phone:
+   *                 type: string
+   *               birthDate:
+   *                 type: string
+   *               gender:
+   *                 type: boolean
+   *               address:
+   *                 type: string
+   *               rolename:
+   *                 type: string
+   *               img:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: Tạo người dùng thành công
+   *       400:
+   *         description: Dữ liệu không hợp lệ hoặc đã tồn tại
+   *       500:
+   *         description: Lỗi máy chủ
+   */
   static async handleCreateUserByAdmin(req: Request, res: Response) {
     try {
-      const userData: createNewUserType = req.body;
-      const newUser = await UserService.creatUserbyAdmin(userData);
-      res.status(HttpStatus.CREATED).json(apiResponse(HttpStatus.CREATED, "Tạo người dùng thành công", newUser));
+      const userData: createNewUserType = req.body
+      const newUser = await UserService.creatUserbyAdmin(userData)
+      res.status(HttpStatus.CREATED).json(apiResponse(HttpStatus.CREATED, 'Tạo người dùng thành công', newUser))
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
 

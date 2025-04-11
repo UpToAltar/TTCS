@@ -1,14 +1,11 @@
-
-import { createNewUserType, updateUserByAdminType, updateUserBySelfType } from "~/type/user.type";
+import { createNewUserType, updateUserByAdminType, updateUserBySelfType } from '~/type/user.type'
 import { Op } from 'sequelize'
 import { User } from '~/models/User'
 import { Role } from '~/models/Role'
-import { Doctor } from "~/models/Doctor";
-import moment from 'moment';
+import { Doctor } from '~/models/Doctor'
+import moment from 'moment'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
-
-
 
 export class UserService {
   static async getUsers(page: number, limit: number, search: string, sort: string, order: string) {
@@ -17,9 +14,7 @@ export class UserService {
 
       // Điều kiện tìm kiếm theo userName, email, phone
       const whereCondition: any = {
-
-        status: true, // Chỉ lấy người dùng có status = true
-
+        status: true // Chỉ lấy người dùng có status = true
       }
 
       if (search) {
@@ -32,14 +27,12 @@ export class UserService {
 
       // Tìm và đếm số lượng user
       const { rows, count } = await User.findAndCountAll({
-
         where: whereCondition,
         include: [
           {
             model: Role,
             as: 'role',
-            where: { name: 'User' }, // Lọc chỉ lấy role = "User"
-            attributes: ['name']
+            attributes: ['name', 'id']
           }
         ],
         order: [[sort, order]],
@@ -57,11 +50,17 @@ export class UserService {
           phone: user?.dataValues.phone,
           gender: user?.dataValues.gender,
           address: user?.dataValues.address,
-          roleName: user?.role?.dataValues.name, // Lấy tên role từ bảng Role
+          roleName: user?.dataValues.role?.dataValues.name,
+          roleId: user?.dataValues.role?.dataValues.id,
+          img: user?.dataValues.img,
+          status: user?.dataValues.status,
+          birthDate: user?.dataValues.birthDate
+            ? moment(user?.dataValues.birthDate).format('DD/MM/YYYY') // Hiển thị lại dd-mm-yyyy
+            : null
         }))
       }
     } catch (error: any) {
-      throw new Error(error.message || 'Lỗi khi lấy danh sách người dùng')
+      throw new Error(error.message)
     }
   }
   static async getUserById(id: string) {
@@ -69,27 +68,27 @@ export class UserService {
       // Lấy người dùng theo ID
       const user = await User.findByPk(id)
       const role = await Role.findByPk(user?.dataValues.roleId)
-      if (!user)
-        return null
+      if (!user) return null
       return {
         id: user?.dataValues.id,
         userName: user?.dataValues.userName,
         email: user?.dataValues.email,
-        birthDate: user?.dataValues.birthDate,
+        birthDate: moment(user?.dataValues.birthDate).format('DD/MM/YYYY'), // Hiển thị lại dd-mm-yyyy
         gender: user?.dataValues.gender,
         address: user?.dataValues.address,
         roleName: role?.dataValues.name,
+        roleId: user?.dataValues.roleId,
+        phone: user?.dataValues.phone,
+        img: user?.dataValues.img,
+        status: user?.dataValues.status
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       throw new Error(error.message)
     }
   }
   static async creatUserbyAdmin(body: createNewUserType) {
     try {
-
       const existingUser = await User.findOne({
-
         where: {
           [Op.or]: [{ email: body.email }, { phone: body.phone }]
         }
@@ -103,13 +102,11 @@ export class UserService {
       })
       // Băm mật khẩu
       const salt = await bcrypt.genSalt(10)
-      const hashedPassword = await bcrypt.hash(body.phone, salt) //Mặc định password = phone 
+      const hashedPassword = await bcrypt.hash(body.phone, salt) //Mặc định password = phone
       // Format birthDate từ dd/mm/yyyy sang yyyy-mm-dd
-      const formattedBirthDate = body.birthDate
-        ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
-        : null;
+      const formattedBirthDate = body.birthDate ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD') : null
       if (!role) {
-        throw new Error(`Không tìm thấy vai trò`);
+        throw new Error(`Không tìm thấy vai trò`)
       }
       const user = await User.create({
         id: uuidv4(),
@@ -121,19 +118,20 @@ export class UserService {
         gender: body.gender,
         address: body.address,
         roleId: role?.dataValues.id,
-        status: true // tài khoản đã được kích hoạt 
+        img: body.img ? body.img : 'https://i.pinimg.com/474x/7c/c7/a6/7cc7a630624d20f7797cb4c8e93c09c1.jpg',
+        status: true // tài khoản đã được kích hoạt
       })
       // Đảm bảo User đã được commit vào database trước khi tạo Doctor
-      await user.reload();
+      await user.reload()
       // Nếu user có vai trò là "doctor", tạo thêm bản ghi trong bảng Doctor
       if (body.roleName === 'Doctor') {
         await Doctor.create({
           id: uuidv4(),
           userId: user?.dataValues.id, // Liên kết với user vừa tạo
           specialtyId: null,
-          degree: '',
-          description: ''
-        });
+          degree: 'Bác sĩ',
+          description: 'Bác sĩ chuyên khoa'
+        })
       }
       return {
         message: 'Thêm mới người dùng thành công',
@@ -146,21 +144,32 @@ export class UserService {
             : null,
           gender: user?.dataValues.gender,
           address: user?.dataValues.address,
-          roleName: body.roleName
+          roleName: body.roleName,
+          roleId: role?.dataValues.id,
+          img: user?.dataValues.img,
+          status: user?.dataValues.status,
+          id: user?.dataValues.id
         }
-      };
+      }
     } catch (error: any) {
       throw new Error(error.message)
     }
   }
-  // Cập nhật thông tin người dùng 
+  // Cập nhật thông tin người dùng
 
   static async updateUserBySelf(userId: string, body: updateUserBySelfType) {
     try {
-      const formattedBirthDate = body.birthDate
-        ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
-        : null;
+      const formattedBirthDate = body.birthDate ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD') : null
       // Kiểm tra email hoặc số điện thoại đã tồn tại
+      const existingUser = await User.findOne({
+        where: {
+          [Op.or]: [{ email: body.email }, { phone: body.phone }],
+          id: { [Op.ne]: userId } // Loại trừ chính người dùng đang cập nhật
+        }
+      })
+      if (existingUser) {
+        throw new Error('Email hoặc số điện thoại đã tồn tại')
+      }
       const user = await User.findByPk(userId)
       if (user) {
         await user.update({
@@ -168,6 +177,9 @@ export class UserService {
           birthDate: formattedBirthDate,
           gender: body.gender,
           address: body.address,
+          phone: body.phone,
+          email: body.email,
+          img: body.img
         })
       }
       return {
@@ -179,10 +191,15 @@ export class UserService {
             : null,
           gender: user?.dataValues.gender,
           address: user?.dataValues.address,
+          phone: user?.dataValues.phone,
+          email: user?.dataValues.email,
+          img: user?.dataValues.img,
+          status: user?.dataValues.status,
+          id: user?.dataValues.id
         }
-      };
-    } catch (error) {
-      throw new Error('Lỗi khi cập nhật người dùng');
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
     }
   }
   static async updateUserByAdmin(id: string, body: updateUserByAdminType) {
@@ -190,25 +207,21 @@ export class UserService {
       // Kiểm tra Số điện thoại đã tồn tại
       const user = await User.findByPk(id)
       if (!user) {
+        console.log('id', id);
         throw new Error('Người dùng không tồn tại')
       }
       // Kiểm tra xem có người dùng nào khác có cùng số điện thoại hoặc email không
       const existingUser = await User.findOne({
         where: {
-          [Op.or]: [
-            { phone: body.phone },
-            { email: body.email }
-          ],
+          [Op.or]: [{ phone: body.phone }, { email: body.email }],
           id: { [Op.ne]: user.id } // Loại trừ chính người dùng đang cập nhật
         }
       })
       if (existingUser) {
-        throw new Error('Số điện thoại hoặc email đã được sử dụng bởi người dùng khác');
+        throw new Error('Số điện thoại hoặc email đã được sử dụng bởi người dùng khác')
       }
       // Format birthDate từ dd/mm/yyyy sang yyyy-mm-dd
-      const formattedBirthDate = body.birthDate
-        ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
-        : null;
+      const formattedBirthDate = body.birthDate ? moment(body.birthDate, 'DD/MM/YYYY').format('YYYY-MM-DD') : null
 
       if (user) {
         await user.update({
@@ -218,9 +231,12 @@ export class UserService {
           birthDate: formattedBirthDate,
           gender: body.gender,
           address: body.address,
+          img: body.img,
+          status: body.status
         })
       }
       return {
+        id : user?.dataValues.id,
         phone: user?.dataValues.phone,
         email: user?.dataValues.email,
         userName: user?.dataValues.userName,
@@ -229,9 +245,12 @@ export class UserService {
           : null,
         gender: user?.dataValues.gender,
         address: user?.dataValues.address,
-      };
-    } catch (error) {
-      throw new Error('Lỗi khi cập nhật người dùng')
+        img: user?.dataValues.img,
+        status: user?.dataValues.status,
+
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
     }
   }
 
@@ -239,12 +258,17 @@ export class UserService {
   static async deleteUser(id: string) {
     try {
       const user = await User.findByPk(id)
-      console.log(user)
       if (!user) {
         throw new Error('Người dùng không tồn tại')
       }
+      // Kiểm tra xem người dùng có phải là bác sĩ hay không
+      const doctor = await Doctor.findOne({ where: { userId: id } })
+      // Nếu là bác sĩ thì xóa bác sĩ
+      if (doctor) {
+        await doctor.destroy()
+      }
+      // Xóa người dùng
       await user.destroy()
-
     } catch (error: any) {
       throw new Error(error.message)
     }

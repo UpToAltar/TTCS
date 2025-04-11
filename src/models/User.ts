@@ -51,6 +51,9 @@ export class User extends Model {
   @Column(DataType.STRING)
   address?: string
 
+  @Column(DataType.STRING)
+  img?: string
+
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
   roleId!: string

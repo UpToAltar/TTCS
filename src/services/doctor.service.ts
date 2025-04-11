@@ -4,6 +4,7 @@ import { User } from '~/models/User'
 import { Role } from '~/models/Role'
 import { Doctor } from '~/models/Doctor'
 import { Specialty } from '~/models/Specialty'
+import e from 'express'
 
 export class DoctorService {
   static async getAllDoctor(page: number, limit: number, search: string, sort: string, order: string) {
@@ -43,35 +44,75 @@ export class DoctorService {
       // Trả về kết quả
       return {
         total: count,
-        doctors: rows.map((user) => ({
-          id: user?.dataValues.id,
-          userName: user?.dataValues.userName,
-          email: user?.dataValues.email,
-          phone: user?.dataValues.phone,
-          gender: user?.dataValues.gender,
-          address: user?.dataValues.address,
-          roleName: user?.role?.dataValues.name
-        }))
+        doctors: await Promise.all(
+          rows.map(async (user) => {
+            const doctor = await Doctor.findOne({
+              where: { userId: user?.dataValues.id },
+              include: [
+                {
+                  model: Specialty,
+                  as: 'specialty',
+                  attributes: ['name', 'id']
+                }
+              ]
+            })
+
+            return {
+              id: user?.dataValues.id,
+              userName: user?.dataValues.userName,
+              email: user?.dataValues.email,
+              phone: user?.dataValues.phone,
+              gender: user?.dataValues.gender,
+              address: user?.dataValues.address,
+              roleName: user?.role?.dataValues.name,
+              img: user?.dataValues.img,
+              degree: doctor?.dataValues.degree,
+              description: doctor?.dataValues.description,
+              specialtyId: doctor?.dataValues.specialty?.dataValues.id,
+              specialtyName: doctor?.dataValues.specialty?.dataValues.name
+            }
+          })
+        )
       }
     } catch (error: any) {
-      throw new Error(error.message || 'Lỗi khi lấy danh sách bác sĩ')
+      throw new Error(error.message)
     }
   }
 
   static async getDoctorById(id: string) {
     try {
       const doctor = await Doctor.findOne({
-        where: { userId: id }
+        where: { userId: id },
+        include: [
+          {
+            model: Specialty,
+            as: 'specialty',
+            attributes: ['id', 'name']
+          },
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'userName', 'email', 'phone', 'address', 'img']
+          }
+        ]
       })
       if (!doctor) return null
 
       return {
-        id: doctor?.dataValues.userId,
+        id: doctor?.dataValues.id,
+        userId: doctor?.dataValues.user?.dataValues.id,
+        userName: doctor?.dataValues.user?.dataValues.userName,
+        email: doctor?.dataValues.user?.dataValues.email,
+        phone: doctor?.dataValues.user?.dataValues.phone,
+        address: doctor?.dataValues.user?.dataValues.address,
+        specialtyId: doctor?.dataValues.specialty?.dataValues.id,
+        specialtyName: doctor?.dataValues.specialty?.dataValues.name,
         degree: doctor?.dataValues.degree,
-        description: doctor?.dataValues.description
+        description: doctor?.dataValues.description,
+        img: doctor?.dataValues.user?.dataValues.img
       }
     } catch (error: any) {
-      throw new Error(error.message || 'Lỗi khi lấy thông tin bác sĩ')
+      throw new Error(error.message)
     }
   }
   static async updateDoctorbyAdmin(id: string, body: EditDoctorType) {
@@ -81,15 +122,17 @@ export class DoctorService {
       })
 
       if (!doctor) throw new Error('Bác sĩ không tồn tại')
-      const specialty = await Specialty.findOne({
-        where: { name: body.namespecial }
-      })
-      if (!specialty) throw new Error('Chuyên khoa không tồn tại')
+
+      let specialty = null
+      if (body.specialtyId != null) {
+        specialty = await Specialty.findByPk(body.specialtyId)
+        if (!specialty) throw new Error('Chuyên khoa không tồn tại')
+      }
       if (doctor) {
         await doctor.update({
           degree: body.degree,
           description: body.description,
-          specialtyId: specialty?.dataValues.id
+          specialtyId: body.specialtyId
         })
       }
       return {
@@ -97,42 +140,15 @@ export class DoctorService {
         doctor: {
           degree: doctor?.dataValues.degree,
           description: doctor?.dataValues.description,
-          namespecial: body.namespecial
+          specialtyId: body.specialtyId,
+          specialtyName: specialty?.dataValues.name,
         }
       }
-    } catch (error) {
-      throw new Error('Lỗi khi cập nhật người dùng')
+    } catch (error : any) {
+      throw new Error(error.message)
     }
   }
 
-  static async updateDoctorBySelf(id: string, body: EditDoctorType) {
-    try {
-      const doctor = await Doctor.findOne({
-        where: { userId: id }
-      })
-      console.log(doctor)
-      const specialty = await Specialty.findOne({
-        where: { name: body.namespecial }
-      })
-      if (doctor) {
-        await doctor.update({
-          degree: body.degree,
-          description: body.description,
-          specialtyId: specialty?.dataValues.id
-        })
-      }
-      return {
-        message: 'Cập nhật thành công',
-        doctor: {
-          degree: doctor?.dataValues.degree,
-          description: doctor?.dataValues.description,
-          namespecial: body.namespecial
-        }
-      }
-    } catch (error) {
-      throw new Error('Lỗi khi cập nhật người dùng')
-    }
-  }
   // Xóa bác sĩ
   static async deleteDoctor(id: string) {
     const user = await User.findByPk(id)
@@ -141,7 +157,7 @@ export class DoctorService {
     }
     // Kiểm tra xem người dùng có phải là bác sĩ hay không
     const doctor = await Doctor.findOne({ where: { userId: id } })
-    console.log(doctor)
+
     if (doctor) {
       await doctor.destroy() // Xóa bản ghi bác sĩ trước
     }

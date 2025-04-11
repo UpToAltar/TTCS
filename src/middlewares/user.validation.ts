@@ -2,7 +2,6 @@ import { body, ValidationChain } from 'express-validator'
 
 
 export const validateUpdatUser = (): ValidationChain[] => [
-
   body('userName')
     .trim()
     .notEmpty()
@@ -20,20 +19,14 @@ export const validateUpdatUser = (): ValidationChain[] => [
     .withMessage('Số điện thoại phải có 10-11 chữ số'),
 
   body('birthDate')
-    .optional()
-    .matches(/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/)
-    .withMessage('Ngày sinh không hợp lệ, định dạng đúng là dd-mm-yyyy'),
+    .notEmpty()
+    .withMessage('Ngày sinh không được để trống')
+    .matches(/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/)
+    .withMessage('Ngày sinh không hợp lệ, định dạng đúng là dd/mm/yyyy'),
 
-  body('gender')
-    .optional()
-    .isBoolean()
-    .withMessage('Giới tính phải là true hoặc false'),
+  body('gender').optional().isBoolean().withMessage('Giới tính phải là true hoặc false'),
 
-  body('address')
-    .optional()
-    .isString()
-    .withMessage('Địa chỉ không hợp lệ')
-
+  body('address').optional().isString().withMessage('Địa chỉ không hợp lệ')
 ]
 
 export const validateUserByAdmin = (): ValidationChain[] => [

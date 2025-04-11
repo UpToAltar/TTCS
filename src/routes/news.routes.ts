@@ -6,8 +6,8 @@ import { authentication, isAdminOrDoctor } from '~/middlewares/auth.middleware'
 const router = Router()
 
 router.post('/add', authentication, isAdminOrDoctor, upload.single('file'), NewsController.createNews)
-router.get('/', authentication, NewsController.getAllNews)
-router.get('/:id', authentication, NewsController.getNewsById)
+router.get('/', NewsController.getAllNews)
+router.get('/:id', NewsController.getNewsById)
 router.put('/update/:id', authentication, isAdminOrDoctor, upload.single('file'), NewsController.updateNews)
 router.delete('/delete/:id', authentication, isAdminOrDoctor, NewsController.deleteNews)
 

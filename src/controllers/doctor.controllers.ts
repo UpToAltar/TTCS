@@ -11,7 +11,7 @@ export class DoctorController {
    * /api/doctor:
    *   get:
    *     summary: Lấy danh sách bác sĩ
-   *     description: Trả về danh sách bác sĩ 
+   *     description: Trả về danh sách bác sĩ
    *     tags:
    *       - Doctor
    *     parameters:
@@ -49,7 +49,7 @@ export class DoctorController {
    */
   static async getAllDoctors(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = '', sort = 'createdAt', order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort = 'createdAt', order = 'DESC' } = req.query
 
       const result = await DoctorService.getAllDoctor(
         Number(page),
@@ -57,13 +57,13 @@ export class DoctorController {
         String(search),
         String(sort),
         String(order)
-      );
+      )
 
-      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách bác sĩ thành công', result));
+      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách bác sĩ thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
   /**
@@ -91,21 +91,17 @@ export class DoctorController {
    */
   static async getDoctorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const doctor = await DoctorService.getDoctorById(id);
+      const { id } = req.params
+      const doctor = await DoctorService.getDoctorById(id)
       if (!doctor) {
-        res
-          .status(HttpStatus.NOT_FOUND)
-          .json(apiResponse(HttpStatus.NOT_FOUND, 'Bác sĩ không tồn tại', null, true));
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Bác sĩ không tồn tại', null, true))
+      } else {
+        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin bác sĩ thành công', doctor))
       }
-      else {
-        res.json(apiResponse(HttpStatus.OK, 'Lấy thông tin bác sĩ thành công', doctor));
-      }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
   /**
@@ -127,9 +123,9 @@ export class DoctorController {
    *                 type: string
    *               description:
    *                 type: string
-   *               namespecial:
+   *               specialtyId:
    *                 type: string
-   *     responses:  
+   *     responses:
    *       200:
    *         description: Cập nhật thành công
    *       404:
@@ -140,22 +136,19 @@ export class DoctorController {
 
   static async UpdateDoctorBySelf(req: Request, res: Response) {
     try {
-
-      const userId = req.user?.id;
+      const userId = req.user?.id
       if (!userId) {
-        res.status(HttpStatus.UNAUTHORIZED).json(
-          apiResponse(HttpStatus.UNAUTHORIZED, "Unauthorized - User ID is missing", null, true)
-        )
-      }
-      else {
+        res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json(apiResponse(HttpStatus.UNAUTHORIZED, 'Unauthorized - User ID is missing', null, true))
+      } else {
         const updateData: EditDoctorType = req.body
-        const updatedUser = await DoctorService.updateDoctorBySelf(userId, updateData);
+        const updatedUser = await DoctorService.updateDoctorbyAdmin(userId, updateData)
         if (!updatedUser) {
           res
             .status(HttpStatus.NOT_FOUND)
             .json(apiResponse(HttpStatus.NOT_FOUND, 'Không tìm thấy người dùng', null, true))
-        }
-        else {
+        } else {
           res
             .status(HttpStatus.OK)
             .json(apiResponse(HttpStatus.OK, 'Cập nhật thông tin người dùng thành công', updatedUser))
@@ -164,7 +157,7 @@ export class DoctorController {
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, 'Lỗi máy chủ', null, true))
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
 
@@ -194,7 +187,7 @@ export class DoctorController {
    *                  type: string
    *                description:
    *                  type: string
-   *                namespecial:
+   *                specialtyId:
    *                  type: string
    *     responses:
    *       200:
@@ -208,24 +201,26 @@ export class DoctorController {
    */
   static async UpdateDoctorByAdmin(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const userData: EditDoctorType = req.body;
+      const { id } = req.params
+      const userData: EditDoctorType = req.body
       if (!id) {
-        res.status(HttpStatus.BAD_REQUEST)
-          .json(apiResponse(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ", null, true)
-          )
-      }
-      else {
+        res.status(HttpStatus.BAD_REQUEST).json(apiResponse(HttpStatus.BAD_REQUEST, 'Dữ liệu không hợp lệ', null, true))
+      } else {
         const updatedUser = await DoctorService.updateDoctorbyAdmin(id, userData)
         if (!updatedUser) {
-          res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, "Không tìm thấy bác sĩ hoặc vai trò", null, true))
-        }
-        else {
-          res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, "Cập nhật thông tin bác sĩ thành công", updatedUser))
+          res
+            .status(HttpStatus.NOT_FOUND)
+            .json(apiResponse(HttpStatus.NOT_FOUND, 'Không tìm thấy bác sĩ hoặc vai trò', null, true))
+        } else {
+          res
+            .status(HttpStatus.OK)
+            .json(apiResponse(HttpStatus.OK, 'Cập nhật thông tin bác sĩ thành công', updatedUser))
         }
       }
     } catch (error: any) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ", null, true));
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
   /**
@@ -257,17 +252,15 @@ export class DoctorController {
       const { id } = req.params
       console.log(id)
       if (!id) {
-        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Người dùng không tồn tại', null, true));
-      }
-      else {
-        await DoctorService.deleteDoctor(id);
-        res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', null));
+        res.status(HttpStatus.NOT_FOUND).json(apiResponse(HttpStatus.NOT_FOUND, 'Người dùng không tồn tại', null, true))
+      } else {
+        await DoctorService.deleteDoctor(id)
+        res.status(HttpStatus.OK).json(apiResponse(HttpStatus.OK, 'Xóa người dùng thành công', null))
       }
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, 'Lỗi máy chủ', null, true))
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
-
 }

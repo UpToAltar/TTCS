@@ -2,6 +2,8 @@ import cloudinary from '~/config/cloudinary'
 import { Specialty } from '../models/Specialty'
 import uploadToCloudinary from '~/utils/upload'
 import { Op } from 'sequelize'
+import { Doctor } from '~/models/Doctor'
+import { User } from '~/models/User'
 
 export class SpecialtyService {
   static async createSpecialty(name: string, file: Express.Multer.File) {
@@ -106,5 +108,47 @@ export class SpecialtyService {
 
     await specialty.destroy()
     return { message: 'Xóa chuyên khoa thành công' }
+  }
+
+  static async getAllDoctorBySpecialty(id: string) {
+    const specialty = await Specialty.findByPk(id)
+    if (!specialty) throw new Error('Chuyên khoa không tồn tại')
+
+    const doctors = await Doctor.findAll({
+      where: { specialtyId: id },
+      include: [
+        {
+          model: Specialty,
+          attributes: ['id', 'name', 'url']
+        },
+        {
+          model: User,
+          attributes: ['id', 'userName', 'email', 'phone', 'address', 'img'],
+        }
+      ]
+    })
+
+    return {
+      specialty: {
+        id: specialty?.dataValues.id,
+        name: specialty?.dataValues.name,
+        url: specialty?.dataValues.url
+      },
+      doctors: doctors.map((doctor) => {
+        return {
+          id: doctor?.dataValues.id,
+          userId: doctor?.dataValues.user?.dataValues.id,
+          userName: doctor?.dataValues.user?.dataValues.userName,
+          email: doctor?.dataValues.user?.dataValues.email,
+          phone: doctor?.dataValues.user?.dataValues.phone,
+          address: doctor?.dataValues.user?.dataValues.address,
+          specialtyId: doctor?.dataValues.specialty?.dataValues.id,
+          specialtyName: doctor?.dataValues.specialty?.dataValues.name,
+          degree: doctor?.dataValues.degree,
+          description: doctor?.dataValues.description,
+          img: doctor?.dataValues.user?.dataValues.img
+        }
+      })
+    }
   }
 }

@@ -5,6 +5,7 @@ export type updateUserBySelfType = {
   birthDate: Date | null
   gender: boolean | null
   address: string | null
+  img: string | null
 }
 export type updateUserByAdminType = {
 
@@ -14,6 +15,8 @@ export type updateUserByAdminType = {
   birthDate: Date | null
   gender: boolean | null
   address: string | null
+  img: string | null
+  status: boolean
 }
 export type createNewUserType = {
   roleName: string
@@ -23,5 +26,6 @@ export type createNewUserType = {
   birthDate: Date
   gender: boolean
   address: string
+  img: string | null
 }
 
