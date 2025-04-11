@@ -18,6 +18,7 @@ export type JwtUserType = {
   email: string | null
   phone: string | null
   role: string | null
+  img: string | null
   status: boolean
   iat?: any
   exp?: any

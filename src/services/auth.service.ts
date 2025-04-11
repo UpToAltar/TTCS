@@ -40,7 +40,8 @@ export class AuthService {
         phone: user.phone,
         password: hashedPassword,
         roleId: userRole?.dataValues.id.toString(),
-        status: false // Mặc định chưa kích hoạt tài khoản
+        status: false, // Mặc định chưa kích hoạt tài khoản,
+        img: 'https://i.pinimg.com/474x/7c/c7/a6/7cc7a630624d20f7797cb4c8e93c09c1.jpg'
       })
 
       // Gửi email xác nhận
@@ -90,7 +91,8 @@ export class AuthService {
         email: user?.dataValues.email,
         phone: user?.dataValues.phone,
         role: user?.dataValues.role?.dataValues.name || '',
-        status: user?.dataValues.status
+        status: user?.dataValues.status,
+        img: user?.dataValues.img,
       }
 
       // Tạo token

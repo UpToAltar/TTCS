@@ -131,6 +131,7 @@ export class BookingService {
       }
     }
     catch (error: any) {
+      throw new Error(error.message);
     }
   }
   static async getAllBooking(page: number, limit: number, sort: string, order: string, user: any) {
