@@ -35,6 +35,8 @@ export class RecordController {
    *                type: string
    *               notes:
    *                type: string
+   *               medicalAppointmentId:
+   *                type: string
    *     responses:
    *       201:
    *         description: Thêm mới thành công

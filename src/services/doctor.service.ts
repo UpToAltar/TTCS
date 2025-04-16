@@ -58,7 +58,8 @@ export class DoctorService {
             })
 
             return {
-              id: user?.dataValues.id,
+              id: doctor?.dataValues.id,
+              userId: user?.dataValues.id,
               userName: user?.dataValues.userName,
               email: user?.dataValues.email,
               phone: user?.dataValues.phone,
