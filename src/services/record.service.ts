@@ -5,6 +5,7 @@ import { Op } from 'sequelize'
 import { validateAuthorization } from '~/utils/validateAuthorization'
 import { Doctor } from '~/models/Doctor'
 import { MedicalRecord } from '~/models/MedicalRecord'
+import { MedicalAppointment } from '~/models/MedicalAppointment'
 
 export class RecordService {
   static async createRecord(body: CreateRecordType, user: any) {
@@ -14,11 +15,24 @@ export class RecordService {
     if (!validateAuthorization(user, findDoctor?.dataValues.userId)) {
       throw new Error('Bạn không có quyền')
     }
+    //Check appointment tồn tại và chưa có hồ sơ bệnh án
+    const findAppointment = await MedicalAppointment.findOne({
+      where: {
+        id: body.medicalAppointmentId,
+        medicalRecordId: null
+      }
+    })
+    if (!findAppointment) throw new Error('Lịch hẹn không tồn tại')
     const record = await MedicalRecord.create({
       doctorId: body.doctorId,
       diagnosis: body.diagnosis,
       prescription: body.prescription,
       notes: body.notes
+    })
+    //Update appointment
+    await findAppointment.update({
+      medicalRecordId: record?.dataValues.id,
+      status: 'Đã khám xong'
     })
     return record
       ? {

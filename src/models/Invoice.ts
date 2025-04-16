@@ -1,6 +1,5 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo } from 'sequelize-typescript'
 import { MedicalAppointment } from './MedicalAppointment'
-import { User } from './User'
 
 @Table({ timestamps: true })
 export class Invoice extends Model {
@@ -21,4 +20,7 @@ export class Invoice extends Model {
 
   @Column(DataType.STRING)
   status!: string
+
+  @Column(DataType.STRING)
+  note!: string
 }
