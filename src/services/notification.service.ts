@@ -1,5 +1,6 @@
 import { Notification } from '~/models/Notification'
 import { User } from '~/models/User'
+import { Doctor } from '~/models/Doctor'
 import { Op } from 'sequelize'
 import moment from 'moment'
 import { AddNotificationType } from '~/type/notification.type'
@@ -27,10 +28,18 @@ export class NotificationService {
       throw new Error(error.message)
     }
   }
-  static async getAllNotifications(page: number, limit: number, search: string, sort: string, order: string) {
+  static async getAllNotifications(page: number, limit: number, sort: string, order: string, user: any) {
     try {
+      let findUser = null
+      if (user.role == 'Doctor' || user.role == 'User') {
+        findUser = await User.findOne({ where: { id: user.id } })
+        if (!findUser) throw new Error('Người dùng không tồn tại')
+        console.log(user.id)
+      }
+
+      const whereCondition = findUser ? { userId: findUser?.dataValues.id } : {}
+
       const offset = (page - 1) * limit
-      const whereCondition = search ? { title: { [Op.like]: `%${search}%` } } : {}
 
       const { rows, count } = await Notification.findAndCountAll({
         where: whereCondition,
@@ -42,10 +51,10 @@ export class NotificationService {
       return {
         total: count,
         notifications: rows.map((notification) => ({
-          id: notification.dataValues.id,
-          title: notification.dataValues.title,
-          content: notification.dataValues.content,
-          userId: notification.dataValues.userId,
+          id: notification?.dataValues.id,
+          title: notification?.dataValues.title,
+          content: notification?.dataValues.content,
+          userId: notification?.dataValues.userId,
           createdAt: notification?.dataValues.createdAt
             ? moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
             : null
@@ -61,14 +70,14 @@ export class NotificationService {
       const notification = await Notification.findByPk(id)
       return notification
         ? {
-            id: notification.dataValues.id,
-            title: notification.dataValues.title,
-            content: notification.dataValues.content,
-            userId: notification.dataValues.userId,
-            createdAt: notification?.dataValues.createdAt
-              ? moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
-              : null
-          }
+          id: notification?.dataValues.id,
+          title: notification?.dataValues.title,
+          content: notification?.dataValues.content,
+          userId: notification?.dataValues.userId,
+          createdAt: notification?.dataValues.createdAt
+            ? moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
+            : null
+        }
         : null
     } catch (error: any) {
       throw new Error(error.message)

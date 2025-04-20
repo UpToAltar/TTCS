@@ -68,11 +68,6 @@ export class NotificationController {
    *           type: integer
    *         description: Số lượng thông báo trên mỗi trang
    *       - in: query
-   *         name: search
-   *         schema:
-   *           type: string
-   *         description: Từ khóa tìm kiếm
-   *       - in: query
    *         name: sort
    *         schema:
    *           type: string
@@ -91,13 +86,13 @@ export class NotificationController {
    */
   static async getAllNotifications(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = '', sort = 'createdAt', order = 'DESC' } = req.query
+      const { page = 1, limit = 10, sort = 'createdAt', order = 'DESC' } = req.query
       const result = await NotificationService.getAllNotifications(
         Number(page),
         Number(limit),
-        String(search),
         String(sort),
-        String(order)
+        String(order),
+        req.user,
       )
       res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách thông báo thành công', result))
     } catch (error: any) {

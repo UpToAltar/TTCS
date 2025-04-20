@@ -2,6 +2,8 @@ import { Op } from 'sequelize'
 import { Booking } from '~/models/Booking'
 import { User } from '~/models/User'
 import { TimeSlot } from '~/models/TimeSlot'
+import { Notification } from '~/models/Notification'
+import { Doctor } from '~/models/Doctor'
 import { generateToken } from '~/utils/token'
 import { sendVerificationBookingEmail, sendVerificationCancelBookingEmail } from '~/utils/mail'
 import jwt from 'jsonwebtoken'
@@ -89,7 +91,22 @@ export class BookingService {
         medicalRecordId: null,
         status: 'Chờ khám'
       })
+      const timeSlot = await TimeSlot.findByPk(booking?.dataValues.timeSlotId)
+      const doctorId = timeSlot?.dataValues.doctorId
+      if (doctorId) {
+        const doctor = await Doctor.findByPk(doctorId)
+        const UserId = doctor?.dataValues.userId
 
+        const formattedDate = moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY')
+        const formattedStartTime = moment(timeSlot?.dataValues.startDate).format('HH:mm:ss')
+        const formattedEndTime = moment(timeSlot?.dataValues.endDate).format('HH:mm:ss')
+        await Notification.create({
+          id: uuidv4(),
+          title: 'Lịch hẹn',
+          content: `Bạn có một lịch hẹn vào ngày ${formattedDate} từ ${formattedStartTime} đến ${formattedEndTime}.`,
+          userId: UserId,
+        })
+      }
       return true
     } catch (error: any) {
       throw new Error(error.message)
@@ -104,6 +121,7 @@ export class BookingService {
           patientId: patientId
         }
       })
+      console.log(booking)
       if (!booking) {
         throw new Error('Không tìm thấy lịch hẹn hoặc bạn không có quyền huỷ')
       }
@@ -111,8 +129,6 @@ export class BookingService {
       // Lấy thông tin người dùng để gửi mail
       const user = await User.findOne({ where: { id: patientId } })
 
-      // Lưu timeSlotId để dùng sau khi xoá
-      const timeSlotId = booking?.dataValues.timeSlotId
       // Gửi mail
       const verificationToken = generateToken({ bookingId: booking?.dataValues.id })
       await sendVerificationCancelBookingEmail(user?.dataValues.email, verificationToken)
@@ -125,8 +141,8 @@ export class BookingService {
   }
   static async verifyCancelBEmail(token: string) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'jwtSecret') as { id: string }
-      const booking = await Booking.findByPk(decoded.id)
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'jwtSecret') as { bookingId: string }
+      const booking = await Booking.findByPk(decoded.bookingId)
 
       if (!booking) {
         throw new Error('Không tìm thấy lịch hẹn hoặc bạn không có quyền huỷ')
@@ -138,6 +154,22 @@ export class BookingService {
       // Mở lại khung giờ đã bị hủy
       await TimeSlot.update({ status: true }, { where: { id: booking?.dataValues.timeSlotId } })
 
+      const timeSlot = await TimeSlot.findByPk(booking?.dataValues.timeSlotId)
+      const doctorId = timeSlot?.dataValues.doctorId
+      if (doctorId) {
+        const doctor = await Doctor.findByPk(doctorId)
+        const UserId = doctor?.dataValues.userId
+
+        const formattedDate = moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY')
+        const formattedStartTime = moment(timeSlot?.dataValues.startDate).format('HH:mm:ss')
+        const formattedEndTime = moment(timeSlot?.dataValues.endDate).format('HH:mm:ss')
+        await Notification.create({
+          id: uuidv4(),
+          title: 'Hủy lịch hẹn',
+          content: `Bạn có một lịch hẹn bị hủy vào ngày ${formattedDate} từ ${formattedStartTime} đến ${formattedEndTime}.`,
+          userId: UserId,
+        })
+      }
       return {
         message: 'Hủy lịch hẹn thành công.'
       }
@@ -154,7 +186,7 @@ export class BookingService {
       }
 
       // Nếu là bệnh nhân thì chỉ lấy lịch của chính họ
-      if (user.role === 'User') {
+      if (user.role == 'User') {
         whereCondition.patientId = user.id
       }
 

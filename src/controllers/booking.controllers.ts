@@ -3,6 +3,7 @@ import { BookingService } from '../services/booking.service'
 import { apiResponse } from '~/utils/apiResponse'
 import { HttpStatus } from '~/utils/httpStatus'
 import { createBookingType } from '~/type/booking.type'
+import { NotificationService } from '~/services/notification.service'
 import { validateEmail } from '~/utils/mail'
 
 /**
@@ -95,7 +96,7 @@ export class BookingController {
   }
   /**
    * @swagger
-   * /api/booking/request-cancel/{id}:
+   * /api/booking/cancel/{id}:
    *   post:
    *     summary: Yêu cầu huỷ lịch hẹn
    *     description: Gửi email yêu cầu xác nhận huỷ lịch hẹn
@@ -105,12 +106,13 @@ export class BookingController {
    *       - in: path
    *         name: id
    *         required: true
+   *         description: ID của lịch hẹn
    *         schema:
    *           type: string
    *     responses:
    *       200:
    *         description: Gửi email xác nhận huỷ thành công
-   *       400:
+   *       404:
    *         description: Không tìm thấy lịch hẹn hoặc không có quyền huỷ
    *       500:
    *         description: Lỗi máy chủ
@@ -119,7 +121,8 @@ export class BookingController {
     try {
       const { id } = req.params
       const patientId = req.user?.id
-
+      console.log(id)
+      console.log(patientId)
       const result = await BookingService.cancelBooking(id, patientId)
 
       res.json(apiResponse(HttpStatus.OK, result.message, null))

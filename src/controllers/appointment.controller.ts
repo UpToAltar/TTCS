@@ -1,25 +1,26 @@
 import { Request, Response } from 'express'
 import { apiResponse } from '~/utils/apiResponse'
 import { HttpStatus } from '~/utils/httpStatus'
-import { CreateRecordType, UpdateRecordType } from '~/type/record.type'
 import { RecordService } from '~/services/record.service'
+import { AppointmentService } from '~/services/appointment.service'
+import { createAppointmentType, UpdateAppointmentType } from '~/type/appointment.type'
 
 /**
  * @swagger
  * tags:
- *   name: Record
- *   description: API record
+ *   name: Appointment
+ *   description: API appointment
  */
 
-export class RecordController {
+export class AppointmentController {
   /**
    * @swagger
-   * /api/record/add:
+   * /api/appointment/add:
    *   post:
-   *     summary: Thêm mới hồ sơ bệnh án
-   *     description: Thêm mới hồ sơ bệnh án
+   *     summary: Thêm mới lịch hẹn khám bệnh
+   *     description: Thêm mới lịch hẹn khám bệnh
    *     tags:
-   *       - Record
+   *       - Appointment
    *     requestBody:
    *       required: true
    *       content:
@@ -27,15 +28,7 @@ export class RecordController {
    *           schema:
    *             type: object
    *             properties:
-   *               doctorId:
-   *                type: string
-   *               diagnosis:
-   *                type: string
-   *               prescription:
-   *                type: string
-   *               notes:
-   *                type: string
-   *               medicalAppointmentId:
+   *               bookingId:
    *                type: string
    *     responses:
    *       201:
@@ -46,11 +39,11 @@ export class RecordController {
    *         description: Lỗi máy chủ
    */
 
-  static async addRecord(req: Request, res: Response) {
+  static async addAppointment(req: Request, res: Response) {
     try {
-      const body: CreateRecordType = req.body
-      const result: any = await RecordService.createRecord(body, req.user)
-      res.json(apiResponse(HttpStatus.CREATED, 'Tạo mới hồ sơ bệnh án thành công', result))
+      const body: createAppointmentType = req.body
+      const result: any = await AppointmentService.addAppointment(body, req.user)
+      res.json(apiResponse(HttpStatus.CREATED, 'Tạo mới lịch hẹn khám bệnh thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -60,12 +53,12 @@ export class RecordController {
 
   /**
    * @swagger
-   * /api/record:
+   * /api/appointment:
    *   get:
-   *     summary: Lấy danh sách hồ sơ bệnh án
-   *     description: Lấy danh sách hồ sơ bệnh án
+   *     summary: Lấy danh sách lịch hẹn lịch hẹn khám bệnh
+   *     description: Lấy danh sách lịch hẹn khám bệnh
    *     tags:
-   *       - Record
+   *       - Appointment
    *     parameters:
    *       - in: query
    *         name: page
@@ -95,17 +88,17 @@ export class RecordController {
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async getAllRecords(req: Request, res: Response) {
+  static async getAllAppointment(req: Request, res: Response) {
     try {
       const { page = 1, limit = 10, sort = 'createdAt', order = 'DESC' } = req.query
-      const result: any = await RecordService.getAllRecords(
+      const result: any = await AppointmentService.getAllAppointments(
         Number(page),
         Number(limit),
         String(sort),
         String(order),
         req.user
       )
-      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách hồ sơ bệnh án thành công', result))
+      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách lịch hẹn khám thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -115,12 +108,12 @@ export class RecordController {
 
   /**
    * @swagger
-   * /api/record/{id}:
+   * /api/appointment/{id}:
    *   get:
-   *     summary: Lấy chi tiết hồ sơ bệnh án
-   *     description: Lấy chi tiết hồ sơ bệnh án
+   *     summary: Lấy chi tiết lịch hẹn khám bệnh
+   *     description: Lấy chi tiết lịch hẹn khám bệnh
    *     tags:
-   *       - Record
+   *       - Appointment
    *     parameters:
    *       - in: path
    *         name: id
@@ -131,15 +124,15 @@ export class RecordController {
    *       200:
    *         description: Lấy chi tiết thành công
    *       400:
-   *         description: Hồ sơ bệnh án không tồn tại
+   *         description: Lịch hẹn không tồn tại
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async getRecordById(req: Request, res: Response) {
+  static async getAppointmentById(req: Request, res: Response) {
     try {
       const { id } = req.params
-      const result: any = await RecordService.getRecordById(id)
-      res.json(apiResponse(HttpStatus.OK, 'Lấy chi tiết hồ sơ bệnh án thành công', result))
+      const result: any = await AppointmentService.getAppointmentById(id)
+      res.json(apiResponse(HttpStatus.OK, 'Lấy chi tiết lịch hẹn khám bệnh thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -150,12 +143,12 @@ export class RecordController {
 
   /**
    * @swagger
-   * /api/record/delete/{id}:
+   * /api/appointment/delete/{id}:
    *   delete:
-   *     summary: Xóa hồ sơ bệnh án
-   *     description: Xóa hồ sơ bệnh án
+   *     summary: Xóa lịch hẹn
+   *     description: Xóa lịch hẹn
    *     tags:
-   *       - Record
+   *       - Appointment
    *     parameters:
    *       - in: path
    *         name: id
@@ -166,15 +159,15 @@ export class RecordController {
    *       200:
    *         description: Xóa thành công
    *       400:
-   *         description: Hồ sơ bệnh án không tồn tại
+   *         description: Lịch hẹn không tồn tại
    *       500:
    *        description: Lỗi máy chủ
    */
-  static async deleteRecord(req: Request, res: Response) {
+  static async deleteAppointment(req: Request, res: Response) {
     try {
       const { id } = req.params
-      await RecordService.deleteRecord(id, req.user)
-      res.json(apiResponse(HttpStatus.OK, 'Xóa hồ sơ bệnh án thành công', null))
+      await AppointmentService.deleteAppointment(id, req.user)
+      res.json(apiResponse(HttpStatus.OK, 'Xóa lịch hẹn thành công', null))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -184,12 +177,12 @@ export class RecordController {
 
   /**
    * @swagger
-   * /api/record/update/{id}:
+   * /api/appointment/update/{id}:
    *   put:
    *     summary: Cập nhật hồ sơ bệnh án
    *     description: Cập nhật hồ sơ bệnh án
    *     tags:
-   *       - Record
+   *       - Appointment
    *     parameters:
    *       - in: path
    *         name: id
@@ -203,26 +196,22 @@ export class RecordController {
    *           schema:
    *             type: object
    *             properties:
-   *               diagnosis:
-   *                type: string
-   *               prescription:
-   *                type: string
-   *               notes:
+   *               status:
    *                type: string
    *     responses:
    *       200:
    *         description: Cập nhật thành công
    *       400:
-   *         description: Hồ sơ bệnh án không tồn tại
+   *         description: Lịch hẹn không tồn tại
    *       500:
    *         description: Lỗi máy chủ
    */
-  static async updateRecord(req: Request, res: Response) {
+  static async updateAppointment(req: Request, res: Response) {
     try {
       const { id } = req.params
-      const body: UpdateRecordType = req.body
-      const result: any = await RecordService.updateRecord(id, body, req.user)
-      res.json(apiResponse(HttpStatus.OK, 'Cập nhật hồ sơ bệnh án thành công', result))
+      const body: UpdateAppointmentType = req.body
+      const result: any = await AppointmentService.updateAppointment(id, body, req.user)
+      res.json(apiResponse(HttpStatus.OK, 'Cập nhật lịch hẹn thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
