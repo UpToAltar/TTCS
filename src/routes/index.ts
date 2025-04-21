@@ -11,6 +11,7 @@ import recordRoutes from './record.routes'
 import bookingRoutes from './booking.routes'
 import invoiceRoutes from './invoice.routes'
 import appointmentRoutes from './appointment.routes'
+import statisticRoutes from './statistic.routes'
 const router = Router()
 
 router.use('/users', userRoutes)
@@ -25,5 +26,6 @@ router.use('/record', recordRoutes)
 router.use('/booking', bookingRoutes)
 router.use('/invoice', invoiceRoutes)
 router.use('/appointment', appointmentRoutes)
+router.use('/statistic', statisticRoutes)
 
 export default router
