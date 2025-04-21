@@ -259,7 +259,7 @@ export class UserController {
    *                 type: boolean
    *               address:
    *                 type: string
-   *               rolename:
+   *               roleName:
    *                 type: string
    *               img:
    *                 type: string
