@@ -4,6 +4,8 @@ import uploadToCloudinary from '~/utils/upload'
 import { Op } from 'sequelize'
 import { Doctor } from '~/models/Doctor'
 import { User } from '~/models/User'
+import { UpdatedAt } from 'sequelize-typescript'
+import moment from 'moment'
 
 export class SpecialtyService {
   static async createSpecialty(name: string, file: Express.Multer.File) {
@@ -39,7 +41,9 @@ export class SpecialtyService {
           return {
             id: specialty?.dataValues.id,
             name: specialty?.dataValues.name,
-            url: specialty?.dataValues.url
+            url: specialty?.dataValues.url,
+            createdAt: moment(specialty?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+            updatedAt: moment(specialty?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
           }
         })
       }
@@ -53,7 +57,13 @@ export class SpecialtyService {
     if (!specialty) throw new Error('Chuyên khoa không tồn tại')
 
     return specialty
-      ? { id: specialty?.dataValues.id, name: specialty?.dataValues.name, url: specialty?.dataValues.url }
+      ? {
+        id: specialty?.dataValues.id,
+        name: specialty?.dataValues.name,
+        url: specialty?.dataValues.url,
+        createdAt: moment(specialty?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(specialty?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+      }
       : null
   }
 
@@ -146,7 +156,9 @@ export class SpecialtyService {
           specialtyName: doctor?.dataValues.specialty?.dataValues.name,
           degree: doctor?.dataValues.degree,
           description: doctor?.dataValues.description,
-          img: doctor?.dataValues.user?.dataValues.img
+          img: doctor?.dataValues.user?.dataValues.img,
+          createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       })
     }

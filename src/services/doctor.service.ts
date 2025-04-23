@@ -4,6 +4,7 @@ import { User } from '~/models/User'
 import { Role } from '~/models/Role'
 import { Doctor } from '~/models/Doctor'
 import { Specialty } from '~/models/Specialty'
+import moment from 'moment'
 import e from 'express'
 
 export class DoctorService {
@@ -70,7 +71,9 @@ export class DoctorService {
               degree: doctor?.dataValues.degree,
               description: doctor?.dataValues.description,
               specialtyId: doctor?.dataValues.specialty?.dataValues.id,
-              specialtyName: doctor?.dataValues.specialty?.dataValues.name
+              specialtyName: doctor?.dataValues.specialty?.dataValues.name,
+              createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+              updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
             }
           })
         )
@@ -110,7 +113,9 @@ export class DoctorService {
         specialtyName: doctor?.dataValues.specialty?.dataValues.name,
         degree: doctor?.dataValues.degree,
         description: doctor?.dataValues.description,
-        img: doctor?.dataValues.user?.dataValues.img
+        img: doctor?.dataValues.user?.dataValues.img,
+        createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
     } catch (error: any) {
       throw new Error(error.message)
@@ -145,7 +150,7 @@ export class DoctorService {
           specialtyName: specialty?.dataValues.name,
         }
       }
-    } catch (error : any) {
+    } catch (error: any) {
       throw new Error(error.message)
     }
   }

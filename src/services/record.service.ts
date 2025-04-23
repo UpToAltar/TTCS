@@ -36,13 +36,13 @@ export class RecordService {
     })
     return record
       ? {
-          id: record?.dataValues.id,
-          doctorId: record?.dataValues.doctorId,
-          diagnosis: record?.dataValues.diagnosis,
-          prescription: record?.dataValues.prescription,
-          notes: record?.dataValues.notes,
-          createdAt: moment().format('DD/MM/YYYY HH:mm:ss')
-        }
+        id: record?.dataValues.id,
+        doctorId: record?.dataValues.doctorId,
+        diagnosis: record?.dataValues.diagnosis,
+        prescription: record?.dataValues.prescription,
+        notes: record?.dataValues.notes,
+        createdAt: moment().format('DD/MM/YYYY HH:mm:ss')
+      }
       : null
   }
 
@@ -75,7 +75,8 @@ export class RecordService {
             diagnosis: record?.dataValues.diagnosis,
             prescription: record?.dataValues.prescription,
             notes: record?.dataValues.notes,
-            createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
+            createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+            updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
           }
         })
       }
@@ -90,13 +91,14 @@ export class RecordService {
 
     return record
       ? {
-          id: record?.dataValues.id,
-          doctorId: record?.dataValues.doctorId,
-          diagnosis: record?.dataValues.diagnosis,
-          prescription: record?.dataValues.prescription,
-          notes: record?.dataValues.notes,
-          createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
-        }
+        id: record?.dataValues.id,
+        doctorId: record?.dataValues.doctorId,
+        diagnosis: record?.dataValues.diagnosis,
+        prescription: record?.dataValues.prescription,
+        notes: record?.dataValues.notes,
+        createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+      }
       : null
   }
 
@@ -120,13 +122,13 @@ export class RecordService {
 
     return updatedRecord
       ? {
-          id: updatedRecord?.dataValues.id,
-          doctorId: updatedRecord?.dataValues.doctorId,
-          diagnosis: updatedRecord?.dataValues.diagnosis,
-          prescription: updatedRecord?.dataValues.prescription,
-          notes: updatedRecord?.dataValues.notes,
-          createdAt: moment(updatedRecord?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
-        }
+        id: updatedRecord?.dataValues.id,
+        doctorId: updatedRecord?.dataValues.doctorId,
+        diagnosis: updatedRecord?.dataValues.diagnosis,
+        prescription: updatedRecord?.dataValues.prescription,
+        notes: updatedRecord?.dataValues.notes,
+        createdAt: moment(updatedRecord?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
+      }
       : null
   }
 

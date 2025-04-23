@@ -225,6 +225,7 @@ export class BookingService {
           serviceId: booking?.dataValues.serviceId,
           status: booking?.dataValues.status,
           createdAt: moment(booking?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(booking?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
           patient: {
             id: booking?.dataValues.patient?.dataValues.id,
             userName: booking?.dataValues.patient?.dataValues.userName,
@@ -283,6 +284,7 @@ export class BookingService {
         serviceId: booking?.dataValues.serviceId,
         status: booking?.dataValues.status,
         createdAt: moment(booking?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(booking?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         patient: {
           id: booking?.dataValues.patient?.dataValues.id,
           userName: booking?.dataValues.patient?.dataValues.userName,

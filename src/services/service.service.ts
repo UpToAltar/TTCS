@@ -1,6 +1,7 @@
 import { AddServiceType } from '~/type/service.type'
 import { Service } from '~/models/Service'
 import { Op } from 'sequelize'
+import moment from 'moment'
 
 export class ServiceService {
   static async addService(body: AddServiceType) {
@@ -44,7 +45,9 @@ export class ServiceService {
             id: service?.dataValues.id,
             name: service?.dataValues.name,
             price: service?.dataValues.price,
-            description: service?.dataValues.description
+            description: service?.dataValues.description,
+            createdAt: moment(service?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+            updatedAt: moment(service?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
           }
         })
       }
@@ -58,11 +61,13 @@ export class ServiceService {
       const service = await Service.findByPk(id)
       return service
         ? {
-            id: service?.dataValues.id,
-            name: service?.dataValues.name,
-            price: service?.dataValues.price,
-            description: service?.dataValues.description
-          }
+          id: service?.dataValues.id,
+          name: service?.dataValues.name,
+          price: service?.dataValues.price,
+          description: service?.dataValues.description,
+          createdAt: moment(service?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(service?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+        }
         : null
     } catch (error: any) {
       throw new Error(error.message)
@@ -88,11 +93,11 @@ export class ServiceService {
       })
       return service
         ? {
-            id: service?.dataValues.id,
-            name: service?.dataValues.name,
-            price: service?.dataValues.price,
-            description: service?.dataValues.description
-          }
+          id: service?.dataValues.id,
+          name: service?.dataValues.name,
+          price: service?.dataValues.price,
+          description: service?.dataValues.description
+        }
         : null
     } catch (error: any) {
       throw new Error(error.message)

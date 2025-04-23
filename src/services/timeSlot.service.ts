@@ -182,12 +182,14 @@ export class TimeSlotService {
       })
       return timeSlot
         ? {
-            id: timeSlot?.dataValues.id,
-            doctorId: timeSlot?.dataValues.doctorId,
-            startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
-            endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-            status: timeSlot?.dataValues.status
-          }
+          id: timeSlot?.dataValues.id,
+          doctorId: timeSlot?.dataValues.doctorId,
+          startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
+          endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
+          status: timeSlot?.dataValues.status,
+          createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+        }
         : null
     } catch (error: any) {
       throw new Error(error.message)
@@ -232,7 +234,9 @@ export class TimeSlotService {
         doctorId: timeSlot?.dataValues.doctorId,
         startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
         endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-        status: timeSlot?.dataValues.status
+        status: timeSlot?.dataValues.status,
+        createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }))
     } catch (error: any) {
       throw new Error(error.message)

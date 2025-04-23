@@ -55,9 +55,8 @@ export class NotificationService {
           title: notification?.dataValues.title,
           content: notification?.dataValues.content,
           userId: notification?.dataValues.userId,
-          createdAt: notification?.dataValues.createdAt
-            ? moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
-            : null
+          createdAt: moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(notification?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }))
       }
     } catch (error: any) {
@@ -74,9 +73,8 @@ export class NotificationService {
           title: notification?.dataValues.title,
           content: notification?.dataValues.content,
           userId: notification?.dataValues.userId,
-          createdAt: notification?.dataValues.createdAt
-            ? moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
-            : null
+          createdAt: moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(notification?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
         : null
     } catch (error: any) {

@@ -204,6 +204,8 @@ export class InvoiceService {
               total: invoice?.dataValues.total,
               status: invoice?.dataValues.status,
               note: invoice?.dataValues.note,
+              createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+              updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
               appointment: {
                 id: invoice?.dataValues.appointment?.dataValues.id,
                 date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -298,6 +300,8 @@ export class InvoiceService {
         total: invoice?.dataValues.total,
         status: invoice?.dataValues.status,
         note: invoice?.dataValues.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
           id: invoice?.dataValues.appointment?.dataValues.id,
           date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
