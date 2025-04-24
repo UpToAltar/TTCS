@@ -15,7 +15,6 @@ router.post(
 )
 router.get('/', authentication, isAdminOrDoctor, InvoiceController.getAllInvoices)
 router.get('/:id', authentication, isAdminOrDoctor, InvoiceController.getInvoiceById)
-router.get('/:id', authentication, isAdminOrDoctor, InvoiceController.getInvoicePDFById)
 router.put(
   '/update/:id',
   authentication,

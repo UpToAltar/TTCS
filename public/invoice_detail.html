@@ -76,6 +76,20 @@
     }
   </style>
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+  function downloadPDF() {
+    const element = document.querySelector(".invoice");
+    const opt = {
+      margin:       0.5,
+      filename:     'hoa_don.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
+</script>
 <body>
   <div class="invoice">
     
@@ -146,5 +160,6 @@
       </div>
     </div>
   </div>
+  <button onclick="downloadPDF()">Xuất PDF</button>
 </body>
 </html>
