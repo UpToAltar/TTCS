@@ -19,7 +19,13 @@ export class SpecialtyService {
     })
 
     return specialty
-      ? { id: specialty?.dataValues.id, name: specialty?.dataValues.name, url: specialty?.dataValues.url }
+      ? {
+        id: specialty?.dataValues.id,
+        name: specialty?.dataValues.name,
+        url: specialty?.dataValues.url,
+        createdAt: moment(specialty?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(specialty?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+      }
       : null
   }
 
@@ -101,7 +107,14 @@ export class SpecialtyService {
 
     await Specialty.update({ name, url: imageUrl }, { where: { id } })
 
-    return specialty ? { id: id, name: name, url: imageUrl } : null
+    return specialty ? {
+      id: id,
+      name: name,
+      url: imageUrl,
+      createdAt: moment(specialty?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+      updatedAt: moment(specialty?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+    }
+      : null
   }
 
   static async deleteSpecialty(id: string) {

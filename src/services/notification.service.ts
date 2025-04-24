@@ -22,7 +22,8 @@ export class NotificationService {
         title: noti?.dataValues.title,
         content: noti?.dataValues.content,
         userId: noti?.dataValues.userId,
-        createdAt: noti?.dataValues.createdAt ? moment(noti?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss') : null
+        createdAt: noti?.dataValues.createdAt ? moment(noti?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss') : null,
+        updatedAt: noti?.dataValues.updatedAt ? moment(noti?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss') : null
       }
     } catch (error: any) {
       throw new Error(error.message)

@@ -59,7 +59,9 @@ export class TimeSlotService {
         doctorId: newTimeSlot?.dataValues.doctorId,
         startDate: moment(newTimeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
         endDate: moment(newTimeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-        status: newTimeSlot?.dataValues.status
+        status: newTimeSlot?.dataValues.status,
+        createdAt: moment(newTimeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(newTimeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
     } catch (error: any) {
       throw new Error(error.message)
@@ -134,7 +136,9 @@ export class TimeSlotService {
         doctorId: result?.dataValues.doctorId,
         startDate: moment(result?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
         endDate: moment(result?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-        status: result?.dataValues.status
+        status: result?.dataValues.status,
+        createdAt: moment(result?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(result?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
     } catch (error: any) {
       throw new Error(error.message)

@@ -148,6 +148,8 @@ export class DoctorService {
           description: doctor?.dataValues.description,
           specialtyId: body.specialtyId,
           specialtyName: specialty?.dataValues.name,
+          createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         }
       }
     } catch (error: any) {

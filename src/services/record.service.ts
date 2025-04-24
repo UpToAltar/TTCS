@@ -41,7 +41,8 @@ export class RecordService {
         diagnosis: record?.dataValues.diagnosis,
         prescription: record?.dataValues.prescription,
         notes: record?.dataValues.notes,
-        createdAt: moment().format('DD/MM/YYYY HH:mm:ss')
+        createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
       }
       : null
   }
@@ -127,7 +128,8 @@ export class RecordService {
         diagnosis: updatedRecord?.dataValues.diagnosis,
         prescription: updatedRecord?.dataValues.prescription,
         notes: updatedRecord?.dataValues.notes,
-        createdAt: moment(updatedRecord?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
+        createdAt: moment(updatedRecord?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(updatedRecord?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
       : null
   }

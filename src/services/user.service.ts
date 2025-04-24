@@ -153,7 +153,9 @@ export class UserService {
           roleId: role?.dataValues.id,
           img: user?.dataValues.img,
           status: user?.dataValues.status,
-          id: user?.dataValues.id
+          id: user?.dataValues.id,
+          createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       }
     } catch (error: any) {
@@ -200,7 +202,9 @@ export class UserService {
           email: user?.dataValues.email,
           img: user?.dataValues.img,
           status: user?.dataValues.status,
-          id: user?.dataValues.id
+          id: user?.dataValues.id,
+          createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       }
     } catch (error: any) {
@@ -252,6 +256,8 @@ export class UserService {
         address: user?.dataValues.address,
         img: user?.dataValues.img,
         status: user?.dataValues.status,
+        createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
 
       }
     } catch (error: any) {

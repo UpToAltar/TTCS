@@ -50,7 +50,9 @@ export class AppointmentService {
         id: appointment?.dataValues.id,
         bookingId: appointment?.dataValues.bookingId,
         status: appointment?.dataValues.status,
-        date: moment(appointment?.dataValues.date).format('DD/MM/YYYY')
+        date: moment(appointment?.dataValues.date).format('DD/MM/YYYY'),
+        createdAt: moment(appointment?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(appointment?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
       : null
   }
@@ -151,7 +153,9 @@ export class AppointmentService {
         id: appointment?.dataValues.id,
         bookingId: appointment?.dataValues.bookingId,
         status: appointment?.dataValues.status,
-        date: moment(appointment?.dataValues.date).format('DD/MM/YYYY')
+        date: moment(appointment?.dataValues.date).format('DD/MM/YYYY'),
+        createdAt: moment(appointment?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(appointment?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
       : null
   }

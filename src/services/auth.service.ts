@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { generateToken } from '~/utils/token'
 import { sendVerificationEmail } from '~/utils/mail'
 import jwt from 'jsonwebtoken'
+import moment from 'moment'
 
 export class AuthService {
   static async registerService(user: RegisterType) {
@@ -53,7 +54,9 @@ export class AuthService {
           id: newUser?.dataValues.id,
           userName: newUser?.dataValues.userName,
           email: newUser?.dataValues.email,
-          phone: newUser?.dataValues.phone
+          phone: newUser?.dataValues.phone,
+          createdAt: moment(newUser?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(newUser?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       }
     } catch (error: any) {
