@@ -60,7 +60,7 @@ export class InvoiceService {
         throw new Error('Lịch hẹn đã bị hủy')
       }
 
-      await Invoice.create({
+      const invoice = await Invoice.create({
         appointmentId: body.appointmentId,
         total: body.total,
         status: body.status,
@@ -99,6 +99,8 @@ export class InvoiceService {
         total: body.total,
         status: body.status,
         note: body.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
           id: findAppointment?.dataValues.id,
           date: moment(findAppointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -204,6 +206,8 @@ export class InvoiceService {
               total: invoice?.dataValues.total,
               status: invoice?.dataValues.status,
               note: invoice?.dataValues.note,
+              createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+              updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
               appointment: {
                 id: invoice?.dataValues.appointment?.dataValues.id,
                 date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -298,6 +302,8 @@ export class InvoiceService {
         total: invoice?.dataValues.total,
         status: invoice?.dataValues.status,
         note: invoice?.dataValues.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
           id: invoice?.dataValues.appointment?.dataValues.id,
           date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -338,6 +344,74 @@ export class InvoiceService {
     }
   }
 
+  static async getInvoicePDFById(id: string) {
+    try {
+      const invoice = await Invoice.findOne({
+        where: { id },
+        include: [
+          {
+            model: MedicalAppointment,
+            as: 'appointment',
+            include: [
+              {
+                model: Booking,
+                as: 'booking',
+                include: [
+                  {
+                    model: Service,
+                    as: 'service'
+                  },
+                  {
+                    model: User,
+                    as: 'patient'
+                  },
+                  {
+                    model: TimeSlot,
+                    as: 'timeSlot'
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      })
+      if (!invoice) return null
+
+      const doctor = await Doctor.findOne({
+        where: {
+          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.doctorId
+        },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['userName', 'email', 'phone', 'address', 'id']
+          }
+        ]
+      })
+
+      return {
+        id: invoice?.dataValues.id,
+        total: invoice?.dataValues.total,
+        status: invoice?.dataValues.status,
+        note: invoice?.dataValues.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        service: {
+          name: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.name,
+          price: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.price
+        },
+        patient: {
+          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.id,
+          userName: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.userName,
+          phone: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.phone,
+          address: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.address,
+        }
+      }
+    }
+    catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
   static async updateInvoice(id: string, body: UpdateInvoiceType) {
     try {
       const invoice = await Invoice.findByPk(id)
@@ -354,7 +428,9 @@ export class InvoiceService {
         appointmentId: invoice?.dataValues.appointmentId,
         total: body.total,
         status: body.status,
-        note: body.note
+        note: body.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
       }
     } catch (error: any) {
       throw new Error(error.message)

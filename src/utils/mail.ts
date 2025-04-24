@@ -68,6 +68,7 @@ export const sendVerificationBookingEmail = async (email: string, token: string,
   })
 
   const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`
+  // const verificationLink = `${process.env.CLIENT_URL}/verify-email.html?token=${token}`
 
   const mailOptions = {
     from: process.env.EMAIL_USER,

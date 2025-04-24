@@ -46,7 +46,9 @@ export class BookingService {
           patientId: newBooking?.dataValues.patientId,
           timeSlotId: newBooking?.dataValues.timeSlotId,
           serviceId: newBooking?.dataValues.serviceId,
-          status: newBooking?.dataValues.status
+          status: newBooking?.dataValues.status,
+          createdAt: moment(newBooking?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(newBooking?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         },
         message: 'Đặt lịch thành công.Vui lòng xác nhận lịch hẹn qua email'
       }
@@ -225,6 +227,7 @@ export class BookingService {
           serviceId: booking?.dataValues.serviceId,
           status: booking?.dataValues.status,
           createdAt: moment(booking?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(booking?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
           patient: {
             id: booking?.dataValues.patient?.dataValues.id,
             userName: booking?.dataValues.patient?.dataValues.userName,
@@ -283,6 +286,7 @@ export class BookingService {
         serviceId: booking?.dataValues.serviceId,
         status: booking?.dataValues.status,
         createdAt: moment(booking?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(booking?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         patient: {
           id: booking?.dataValues.patient?.dataValues.id,
           userName: booking?.dataValues.patient?.dataValues.userName,

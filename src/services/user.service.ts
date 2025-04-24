@@ -6,6 +6,7 @@ import { Doctor } from '~/models/Doctor'
 import moment from 'moment'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
+import { CreatedAt } from 'sequelize-typescript'
 
 export class UserService {
   static async getUsers(page: number, limit: number, search: string, sort: string, order: string) {
@@ -56,7 +57,9 @@ export class UserService {
           status: user?.dataValues.status,
           birthDate: user?.dataValues.birthDate
             ? moment(user?.dataValues.birthDate).format('DD/MM/YYYY') // Hiển thị lại dd-mm-yyyy
-            : null
+            : null,
+          createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }))
       }
     } catch (error: any) {
@@ -80,7 +83,9 @@ export class UserService {
         roleId: user?.dataValues.roleId,
         phone: user?.dataValues.phone,
         img: user?.dataValues.img,
-        status: user?.dataValues.status
+        status: user?.dataValues.status,
+        createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
     } catch (error: any) {
       throw new Error(error.message)
@@ -148,7 +153,9 @@ export class UserService {
           roleId: role?.dataValues.id,
           img: user?.dataValues.img,
           status: user?.dataValues.status,
-          id: user?.dataValues.id
+          id: user?.dataValues.id,
+          createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       }
     } catch (error: any) {
@@ -195,7 +202,9 @@ export class UserService {
           email: user?.dataValues.email,
           img: user?.dataValues.img,
           status: user?.dataValues.status,
-          id: user?.dataValues.id
+          id: user?.dataValues.id,
+          createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       }
     } catch (error: any) {
@@ -236,7 +245,7 @@ export class UserService {
         })
       }
       return {
-        id : user?.dataValues.id,
+        id: user?.dataValues.id,
         phone: user?.dataValues.phone,
         email: user?.dataValues.email,
         userName: user?.dataValues.userName,
@@ -247,6 +256,8 @@ export class UserService {
         address: user?.dataValues.address,
         img: user?.dataValues.img,
         status: user?.dataValues.status,
+        createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
 
       }
     } catch (error: any) {
