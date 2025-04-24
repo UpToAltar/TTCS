@@ -150,41 +150,6 @@ export class InvoiceController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
-  /**
-     * @swagger
-     * /api/invoice/invoice_detail/{id}:
-     *   get:
-     *     summary: Xuất hóa đơn theo ID
-     *     description: API để xuất hóa đơn theo ID
-     *     tags:
-     *       - Invoice
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         description: ID của hóa đơn
-     *         schema:
-     *           type: string
-     *     responses:
-     *       200:
-     *         description: Xuất hóa đơn thành công
-     *       404:
-     *         description: Hóa đơn không tồn tại
-     *       500:
-     *         description: Lỗi máy chủ
-     */
-
-  static async getInvoicePDFById(req: Request, res: Response) {
-    try {
-      const { id } = req.params
-      const result = await InvoiceService.getInvoicePDFById(id)
-      res.json(apiResponse(HttpStatus.OK, 'Xuất hóa đơn thành công', result))
-    } catch (error: any) {
-      res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
-    }
-  }
 
   /**
    * @swagger
