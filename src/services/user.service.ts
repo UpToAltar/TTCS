@@ -223,7 +223,7 @@ export class UserService {
       const existingUser = await User.findOne({
         where: {
           [Op.or]: [{ phone: body.phone }, { email: body.email }],
-          id: { [Op.ne]: user.id } // Loại trừ chính người dùng đang cập nhật
+          id: { [Op.ne]: user?.dataValues.id } // Loại trừ chính người dùng đang cập nhật
         }
       })
       if (existingUser) {
