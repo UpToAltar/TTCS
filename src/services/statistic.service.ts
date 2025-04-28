@@ -3,6 +3,8 @@ import { Booking } from '~/models/Booking'
 import { Doctor } from '~/models/Doctor'
 import { Invoice } from '~/models/Invoice'
 import { MedicalAppointment } from '~/models/MedicalAppointment'
+import { Role } from '~/models/Role'
+import { Specialty } from '~/models/Specialty'
 import { TimeSlot } from '~/models/TimeSlot'
 import { User } from '~/models/User'
 
@@ -214,5 +216,77 @@ export class StatisticService {
     })
 
     return { label: label, data }
+  }
+
+  static async getStatisticDoctor() {
+    const doctorCount = await Doctor.count()
+    const doctorActive = await User.count({
+      include: [
+        {
+          model: Role,
+          where: { name: 'Doctor' } // điều kiện lọc theo Role name
+        }
+      ],
+      where: {
+        status: true
+      }
+    })
+    const doctorInactive = await User.count({
+      include: [
+        {
+          model: Role,
+          where: { name: 'Doctor' } // điều kiện lọc theo Role name
+        }
+      ],
+      where: {
+        status: false
+      }
+    })
+    const countAllTimeSlotOfDays = await TimeSlot.count({
+      where: {
+        startDate: {
+          [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0))
+        },
+        endDate: {
+          [Op.lte]: new Date(new Date().setHours(23, 59, 59, 999))
+        }
+      }
+    })
+
+    // Chart
+    const getRandomColor = () => {
+      const letters = '0123456789ABCDEF'
+      let color = '#'
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)]
+      }
+      return color
+    }
+
+    const specialties = await Specialty.findAll({
+      include: [{ model: Doctor }]
+    })
+
+    const label: string[] = []
+    const data: number[] = []
+    const color: string[] = []
+
+    specialties.forEach((specialty) => {
+      label.push(specialty?.dataValues.name)
+      data.push(specialty?.dataValues.doctors?.length || 0)
+      color.push(getRandomColor())
+    })
+
+    return {
+      doctorCount,
+      doctorActive,
+      doctorInactive,
+      countAllTimeSlotOfDays,
+      chart: {
+        label,
+        data,
+        color
+      }
+    }
   }
 }

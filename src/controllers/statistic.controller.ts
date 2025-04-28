@@ -61,4 +61,29 @@ export class StatisticController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
+
+  /**
+   * @swagger
+   * /api/statistic/doctor:
+   *   get:
+   *     summary: Thống kê bác sĩ
+   *     description: Thống kê bác sĩ
+   *     tags:
+   *       - Statistic
+   *     responses:
+   *       200:
+   *         description: Thống kê thành công
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getStatisticDoctor(req: Request, res: Response) {
+    try {
+      const result = await StatisticService.getStatisticDoctor()
+      res.json(apiResponse(HttpStatus.OK, 'Thống kê thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 }
