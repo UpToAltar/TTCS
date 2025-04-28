@@ -59,19 +59,19 @@ export class DoctorService {
             })
 
             return {
-              id: doctor?.dataValues.id,
-              userId: user?.dataValues.id,
-              userName: user?.dataValues.userName,
-              email: user?.dataValues.email,
-              phone: user?.dataValues.phone,
-              gender: user?.dataValues.gender,
-              address: user?.dataValues.address,
-              roleName: user?.role?.dataValues.name,
-              img: user?.dataValues.img,
-              degree: doctor?.dataValues.degree,
-              description: doctor?.dataValues.description,
-              specialtyId: doctor?.dataValues.specialty?.dataValues.id,
-              specialtyName: doctor?.dataValues.specialty?.dataValues.name,
+              id: doctor?.dataValues.id || null,
+              userId: user?.dataValues.id || null,
+              userName: user?.dataValues.userName || null,
+              email: user?.dataValues.email || null,
+              phone: user?.dataValues.phone || null,
+              gender: user?.dataValues.gender || null,
+              address: user?.dataValues.address || null,
+              roleName: user?.role?.dataValues.name || null,
+              img: user?.dataValues.img || null,
+              degree: doctor?.dataValues.degree || null,
+              description: doctor?.dataValues.description || null,
+              specialtyId: doctor?.dataValues.specialty?.dataValues.id || null,
+              specialtyName: doctor?.dataValues.specialty?.dataValues.name || null,
               createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
               updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
             }
@@ -103,17 +103,17 @@ export class DoctorService {
       if (!doctor) return null
 
       return {
-        id: doctor?.dataValues.id,
-        userId: doctor?.dataValues.user?.dataValues.id,
-        userName: doctor?.dataValues.user?.dataValues.userName,
-        email: doctor?.dataValues.user?.dataValues.email,
-        phone: doctor?.dataValues.user?.dataValues.phone,
-        address: doctor?.dataValues.user?.dataValues.address,
-        specialtyId: doctor?.dataValues.specialty?.dataValues.id,
-        specialtyName: doctor?.dataValues.specialty?.dataValues.name,
-        degree: doctor?.dataValues.degree,
-        description: doctor?.dataValues.description,
-        img: doctor?.dataValues.user?.dataValues.img,
+        id: doctor?.dataValues.id || null,
+        userId: doctor?.dataValues.user?.dataValues.id || null,
+        userName: doctor?.dataValues.user?.dataValues.userName || null,
+        email: doctor?.dataValues.user?.dataValues.email || null,
+        phone: doctor?.dataValues.user?.dataValues.phone || null,
+        address: doctor?.dataValues.user?.dataValues.address || null,
+        specialtyId: doctor?.dataValues.specialty?.dataValues.id || null,
+        specialtyName: doctor?.dataValues.specialty?.dataValues.name || null,
+        degree: doctor?.dataValues.degree || null,
+        description: doctor?.dataValues.description || null,
+        img: doctor?.dataValues.user?.dataValues.img || null,
         createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
         updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
@@ -149,7 +149,7 @@ export class DoctorService {
           specialtyId: body.specialtyId,
           specialtyName: specialty?.dataValues.name,
           createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-          updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
       }
     } catch (error: any) {

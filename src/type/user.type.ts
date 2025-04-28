@@ -8,7 +8,6 @@ export type updateUserBySelfType = {
   img: string | null
 }
 export type updateUserByAdminType = {
-
   userName: string | null
   email: string | null
   phone: string | null
@@ -28,4 +27,3 @@ export type createNewUserType = {
   address: string
   img: string | null
 }
-
