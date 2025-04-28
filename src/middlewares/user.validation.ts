@@ -1,6 +1,5 @@
 import { body, ValidationChain } from 'express-validator'
 
-
 export const validateUpdatUser = (): ValidationChain[] => [
   body('userName')
     .trim()
@@ -30,13 +29,12 @@ export const validateUpdatUser = (): ValidationChain[] => [
 ]
 
 export const validateUserByAdmin = (): ValidationChain[] => [
-
   body('roleName')
     .trim()
     .notEmpty()
     .withMessage('Vai trò không được để trống')
-    .isIn(['User', 'Doctor'])
-    .withMessage('Vai trò phải là User hoặc Doctor'),
+    .isIn(['User', 'Doctor', 'Admin'])
+    .withMessage('Vai trò phải là User hoặc Doctor hoặc Admin'),
   body('userName')
     .trim()
     .notEmpty()
@@ -44,12 +42,7 @@ export const validateUserByAdmin = (): ValidationChain[] => [
     .isLength({ min: 3 })
     .withMessage('Tên người dùng phải có ít nhất 3 ký tự'),
 
-  body('email')
-    .trim()
-    .notEmpty()
-    .withMessage('Email không được để trống')
-    .isEmail()
-    .withMessage('Email không hợp lệ'),
+  body('email').trim().notEmpty().withMessage('Email không được để trống').isEmail().withMessage('Email không hợp lệ'),
 
   body('phone')
     .trim()
@@ -70,9 +63,5 @@ export const validateUserByAdmin = (): ValidationChain[] => [
     .isBoolean()
     .withMessage('Giới tính phải là true hoặc false'),
 
-  body('address')
-    .notEmpty()
-    .withMessage('Địa chỉ không được để trống')
-    .isString()
-    .withMessage('Địa chỉ không hợp lệ')
+  body('address').notEmpty().withMessage('Địa chỉ không được để trống').isString().withMessage('Địa chỉ không hợp lệ')
 ]
