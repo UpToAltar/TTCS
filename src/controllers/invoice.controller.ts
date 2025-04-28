@@ -151,7 +151,6 @@ export class InvoiceController {
     }
   }
 
-
   /**
    * @swagger
    * /api/invoice/{id}:

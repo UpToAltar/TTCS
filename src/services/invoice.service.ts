@@ -60,7 +60,7 @@ export class InvoiceService {
         throw new Error('Lịch hẹn đã bị hủy')
       }
 
-      await Invoice.create({
+      const invoice = await Invoice.create({
         appointmentId: body.appointmentId,
         total: body.total,
         status: body.status,
@@ -99,6 +99,8 @@ export class InvoiceService {
         total: body.total,
         status: body.status,
         note: body.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
           id: findAppointment?.dataValues.id,
           date: moment(findAppointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -204,6 +206,8 @@ export class InvoiceService {
               total: invoice?.dataValues.total,
               status: invoice?.dataValues.status,
               note: invoice?.dataValues.note,
+              createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+              updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
               appointment: {
                 id: invoice?.dataValues.appointment?.dataValues.id,
                 date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -298,6 +302,8 @@ export class InvoiceService {
         total: invoice?.dataValues.total,
         status: invoice?.dataValues.status,
         note: invoice?.dataValues.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
           id: invoice?.dataValues.appointment?.dataValues.id,
           date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -338,6 +344,8 @@ export class InvoiceService {
     }
   }
 
+
+
   static async updateInvoice(id: string, body: UpdateInvoiceType) {
     try {
       const invoice = await Invoice.findByPk(id)
@@ -354,7 +362,9 @@ export class InvoiceService {
         appointmentId: invoice?.dataValues.appointmentId,
         total: body.total,
         status: body.status,
-        note: body.note
+        note: body.note,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
       }
     } catch (error: any) {
       throw new Error(error.message)
