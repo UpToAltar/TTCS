@@ -14,9 +14,7 @@ export class UserService {
       const offset = (page - 1) * limit
 
       // Điều kiện tìm kiếm theo userName, email, phone
-      const whereCondition: any = {
-        status: true // Chỉ lấy người dùng có status = true
-      }
+      const whereCondition: any = {}
 
       if (search) {
         whereCondition[Op.or] = [
@@ -216,7 +214,7 @@ export class UserService {
       // Kiểm tra Số điện thoại đã tồn tại
       const user = await User.findByPk(id)
       if (!user) {
-        console.log('id', id);
+        console.log('id', id)
         throw new Error('Người dùng không tồn tại')
       }
       // Kiểm tra xem có người dùng nào khác có cùng số điện thoại hoặc email không
@@ -258,7 +256,6 @@ export class UserService {
         status: user?.dataValues.status,
         createdAt: moment(user?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
         updatedAt: moment(user?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
-
       }
     } catch (error: any) {
       throw new Error(error.message)
