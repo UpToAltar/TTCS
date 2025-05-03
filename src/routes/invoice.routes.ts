@@ -23,6 +23,6 @@ router.put(
   handleValidationErrors,
   InvoiceController.updateInvoice
 )
-router.delete('/delete/:id', authentication, isAdminOrDoctor, InvoiceController.deleteInvoice)
+router.delete('/:id', authentication, isAdminOrDoctor, InvoiceController.deleteInvoice)
 
 export default router
