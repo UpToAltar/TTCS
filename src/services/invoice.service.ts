@@ -1,4 +1,3 @@
-
 import { Op } from 'sequelize'
 import { CreateInvoiceType, UpdateInvoiceType } from '~/type/invoice.type'
 import { MedicalAppointment } from '~/models/MedicalAppointment'
@@ -43,7 +42,6 @@ export class InvoiceService {
           }
         ]
       })
-      console.log('find', findAppointment?.dataValues.booking?.dataValues.service?.dataValues)
       if (!findAppointment) {
         throw new Error('Lịch hẹn không tồn tại')
       }
@@ -94,51 +92,53 @@ export class InvoiceService {
         userId: notification.userId
       })
       return {
-        id: findAppointment?.dataValues.booking?.dataValues.id,
-        appointmentId: findAppointment?.dataValues.id,
-        total: body.total,
-        status: body.status,
-        note: body.note,
+        id: findAppointment?.dataValues.booking?.dataValues.id || null,
+        appointmentId: findAppointment?.dataValues.id || null,
+        total: body.total || null,
+        status: body.status || null,
+        note: body.note || null,
         createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
         updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
-          id: findAppointment?.dataValues.id,
-          date: moment(findAppointment?.dataValues.date).format('DD/MM/YYYY'),
-          status: findAppointment?.dataValues.status
+          id: findAppointment?.dataValues.id || null,
+          date: moment(findAppointment?.dataValues.date).format('DD/MM/YYYY') || null,
+          status: findAppointment?.dataValues.status || null
         },
         service: {
-          id: findAppointment?.dataValues.booking?.dataValues.service?.dataValues.id,
-          name: findAppointment?.dataValues.booking?.dataValues.service?.dataValues.name,
-          price: findAppointment?.dataValues.booking?.dataValues.service?.dataValues.price
+          id: findAppointment?.dataValues.booking?.dataValues.service?.dataValues.id || null,
+          name: findAppointment?.dataValues.booking?.dataValues.service?.dataValues.name || null,
+          price: findAppointment?.dataValues.booking?.dataValues.service?.dataValues.price || null
         },
         medicalRecord: {
-          id: findAppointment?.dataValues.medicalRecord?.dataValues.id,
-          diagnosis: findAppointment?.dataValues.medicalRecord?.dataValues.diagnosis,
-          prescription: findAppointment?.dataValues.medicalRecord?.dataValues.prescription,
-          notes: findAppointment?.dataValues.medicalRecord?.dataValues.notes
+          id: findAppointment?.dataValues.medicalRecord?.dataValues.id || null,
+          diagnosis: findAppointment?.dataValues.medicalRecord?.dataValues.diagnosis || null,
+          prescription: findAppointment?.dataValues.medicalRecord?.dataValues.prescription || null,
+          notes: findAppointment?.dataValues.medicalRecord?.dataValues.notes || null
         },
         patient: {
-          id: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.id,
-          userName: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.userName,
-          email: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.email,
-          phone: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.phone
+          id: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.id || null,
+          userName: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.userName || null,
+          email: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.email || null,
+          phone: findAppointment?.dataValues.booking?.dataValues.patient?.dataValues.phone || null
         },
         timeSlot: {
-          id: findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.id,
-          startDate: moment(findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.startDate).format(
-            'DD/MM/YYYY HH:mm:ss'
-          ),
-          endDate: moment(findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.endDate).format(
-            'DD/MM/YYYY HH:mm:ss'
-          ),
-          status: findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.status
+          id: findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.id || null,
+          startDate:
+            moment(findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.startDate).format(
+              'DD/MM/YYYY HH:mm:ss'
+            ) || null,
+          endDate:
+            moment(findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.endDate).format(
+              'DD/MM/YYYY HH:mm:ss'
+            ) || null,
+          status: findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.status || null
         },
         doctor: {
-          id: doctor?.dataValues.id,
-          userName: doctor?.dataValues.user?.dataValues.userName,
-          email: doctor?.dataValues.user?.dataValues.email,
-          phone: doctor?.dataValues.user?.dataValues.phone,
-          address: doctor?.dataValues.user?.dataValues.address
+          id: doctor?.dataValues.id || null,
+          userName: doctor?.dataValues.user?.dataValues.userName || null,
+          email: doctor?.dataValues.user?.dataValues.email || null,
+          phone: doctor?.dataValues.user?.dataValues.phone || null,
+          address: doctor?.dataValues.user?.dataValues.address || null
         }
       }
     } catch (error: any) {
@@ -201,45 +201,50 @@ export class InvoiceService {
               ]
             })
             return {
-              id: invoice?.dataValues.id,
-              appointmentId: invoice?.dataValues.appointmentId,
-              total: invoice?.dataValues.total,
-              status: invoice?.dataValues.status,
-              note: invoice?.dataValues.note,
-              createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-              updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+              id: invoice?.dataValues.id || null,
+              appointmentId: invoice?.dataValues.appointmentId || null,
+              total: invoice?.dataValues.total || null,
+              status: invoice?.dataValues.status || null,
+              note: invoice?.dataValues.note || null,
+              createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss') || null,
+              updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss') || null,
               appointment: {
-                id: invoice?.dataValues.appointment?.dataValues.id,
-                date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
-                status: invoice?.dataValues.appointment?.dataValues.status
+                id: invoice?.dataValues.appointment?.dataValues.id || null,
+                date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY') || null,
+                status: invoice?.dataValues.appointment?.dataValues.status || null
               },
               service: {
-                id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.id,
-                name: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.name,
-                price: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.price
+                id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.id || null,
+                name: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.name || null,
+                price: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.price || null
               },
               patient: {
-                id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.id,
-                userName: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.userName,
-                email: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.email,
-                phone: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.phone
+                id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.id || null,
+                userName:
+                  invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.userName || null,
+                email:
+                  invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.email || null,
+                phone: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.phone || null
               },
               timeSlot: {
-                id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.id,
-                startDate: moment(
-                  invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.startDate
-                ).format('DD/MM/YYYY HH:mm:ss'),
-                endDate: moment(
-                  invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.endDate
-                ).format('DD/MM/YYYY HH:mm:ss'),
-                status: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.status
+                id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.id || null,
+                startDate:
+                  moment(
+                    invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.startDate
+                  ).format('DD/MM/YYYY HH:mm:ss') || null,
+                endDate:
+                  moment(
+                    invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.endDate
+                  ).format('DD/MM/YYYY HH:mm:ss') || null,
+                status:
+                  invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.status || null
               },
               doctor: {
-                id: doctor?.dataValues.id,
-                userName: doctor?.dataValues.user?.dataValues.userName,
-                email: doctor?.dataValues.user?.dataValues.email,
-                phone: doctor?.dataValues.user?.dataValues.phone,
-                address: doctor?.dataValues.user?.dataValues.address
+                id: doctor?.dataValues.id || null,
+                userName: doctor?.dataValues.user?.dataValues.userName || null,
+                email: doctor?.dataValues.user?.dataValues.email || null,
+                phone: doctor?.dataValues.user?.dataValues.phone || null,
+                address: doctor?.dataValues.user?.dataValues.address || null
               }
             }
           })
@@ -297,54 +302,54 @@ export class InvoiceService {
       })
 
       return {
-        id: invoice?.dataValues.id,
-        appointmentId: invoice?.dataValues.appointmentId,
-        total: invoice?.dataValues.total,
-        status: invoice?.dataValues.status,
-        note: invoice?.dataValues.note,
-        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+        id: invoice?.dataValues.id || null,
+        appointmentId: invoice?.dataValues.appointmentId || null,
+        total: invoice?.dataValues.total || null,
+        status: invoice?.dataValues.status || null,
+        note: invoice?.dataValues.note || null,
+        createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss') || null,
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss') || null,
         appointment: {
-          id: invoice?.dataValues.appointment?.dataValues.id,
-          date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY'),
-          status: invoice?.dataValues.appointment?.dataValues.status
+          id: invoice?.dataValues.appointment?.dataValues.id || null,
+          date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY') || null,
+          status: invoice?.dataValues.appointment?.dataValues.status || null
         },
         service: {
-          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.id,
-          name: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.name,
-          price: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.price
+          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.id || null,
+          name: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.name || null,
+          price: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.price || null
         },
         patient: {
-          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.id,
-          userName: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.userName,
-          email: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.email,
-          phone: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.phone
+          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.id || null,
+          userName:
+            invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.userName || null,
+          email: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.email || null,
+          phone: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.patient?.dataValues.phone || null
         },
         timeSlot: {
-          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.id,
-          startDate: moment(
-            invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.startDate
-          ).format('DD/MM/YYYY HH:mm:ss'),
-          endDate: moment(
-            invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.endDate
-          ).format('DD/MM/YYYY HH:mm:ss'),
-          status: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.status
+          id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.id || null,
+          startDate:
+            moment(
+              invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.startDate
+            ).format('DD/MM/YYYY HH:mm:ss') || null,
+          endDate:
+            moment(invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.endDate).format(
+              'DD/MM/YYYY HH:mm:ss'
+            ) || null,
+          status: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.status || null
         },
         doctor: {
-          id: doctor?.dataValues.id,
-          userName: doctor?.dataValues.user?.dataValues.userName,
-          email: doctor?.dataValues.user?.dataValues.email,
-          phone: doctor?.dataValues.user?.dataValues.phone,
-          address: doctor?.dataValues.user?.dataValues.address
+          id: doctor?.dataValues.id || null,
+          userName: doctor?.dataValues.user?.dataValues.userName || null,
+          email: doctor?.dataValues.user?.dataValues.email || null,
+          phone: doctor?.dataValues.user?.dataValues.phone || null,
+          address: doctor?.dataValues.user?.dataValues.address || null
         }
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       throw new Error(error.message)
     }
   }
-
-
 
   static async updateInvoice(id: string, body: UpdateInvoiceType) {
     try {
@@ -364,7 +369,7 @@ export class InvoiceService {
         status: body.status,
         note: body.note,
         createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+        updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
     } catch (error: any) {
       throw new Error(error.message)
@@ -376,6 +381,7 @@ export class InvoiceService {
       const invoice = await Invoice.findByPk(id)
       if (!invoice) throw new Error('Hóa đơn không tồn tại')
 
+      console.log('invoice', invoice);
       await invoice.destroy()
       return {
         message: 'Xóa hóa đơn thành công'
