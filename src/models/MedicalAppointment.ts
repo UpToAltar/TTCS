@@ -29,4 +29,7 @@ export class MedicalAppointment extends Model {
 
   @Column(DataType.STRING)
   status!: string
+
+  @Column(DataType.STRING)
+  code!: string
 }

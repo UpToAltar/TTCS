@@ -10,6 +10,28 @@ import { MedicalAppointment } from '~/models/MedicalAppointment'
 import { createAppointmentType, UpdateAppointmentType } from '~/type/appointment.type'
 
 export class AppointmentService {
+  public static async generateAppointmentCode(): Promise<string> {
+    // Find the latest appointment code
+    const latestAppointment = await MedicalAppointment.findOne({
+      where: {
+        code: {
+          [Op.like]: 'AP%'
+        }
+      },
+      order: [['code', 'DESC']]
+    })
+
+    let nextNumber = 1
+    if (latestAppointment?.dataValues.code) {
+      // Extract the number part and increment
+      const currentNumber = parseInt(latestAppointment.dataValues.code.substring(2))
+      nextNumber = currentNumber + 1
+    }
+
+    // Format the new code with leading zeros
+    return `AP${String(nextNumber).padStart(5, '0')}`
+  }
+
   static async addAppointment(body: createAppointmentType, user: any) {
     const findBooking = await Booking.findOne({
       where: {
@@ -39,7 +61,13 @@ export class AppointmentService {
       }
     })
     if (findAppointment) throw new Error('Lịch hẹn đã tồn tại')
+
+    // Generate new appointment code
+    const appointmentCode = await AppointmentService.generateAppointmentCode()
+
     const appointment = await MedicalAppointment.create({
+      id: uuidv4(),
+      code: appointmentCode,
       bookingId: body.bookingId,
       medicalRecordId: null,
       date: new Date,
@@ -48,6 +76,7 @@ export class AppointmentService {
     return appointment
       ? {
         id: appointment?.dataValues.id,
+        code: appointment?.dataValues.code,
         bookingId: appointment?.dataValues.bookingId,
         status: appointment?.dataValues.status,
         date: moment(appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -90,6 +119,7 @@ export class AppointmentService {
         appointment: rows.map((appointment) => {
           return {
             id: appointment?.dataValues.id,
+            code: appointment?.dataValues.code,
             bookingId: appointment?.dataValues.bookingId,
             status: appointment?.dataValues.status,
             date: moment(appointment?.dataValues.date).format('DD/MM/YYYY'),
@@ -109,6 +139,7 @@ export class AppointmentService {
     return appointment
       ? {
         id: appointment?.dataValues.id,
+        code: appointment?.dataValues.code,
         bookingId: appointment?.dataValues.bookingId,
         status: appointment?.dataValues.status,
         date: moment(appointment?.dataValues.date).format('DD/MM/YYYY'),

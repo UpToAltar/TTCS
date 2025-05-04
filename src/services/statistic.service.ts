@@ -289,4 +289,64 @@ export class StatisticService {
       }
     }
   }
+
+  static async getStatisticTimeSlot() {
+    const totalCount = await TimeSlot.count()
+    
+    const todayCount = await TimeSlot.count({
+      where: {
+        startDate: {
+          [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0))
+        },
+        endDate: {
+          [Op.lte]: new Date(new Date().setHours(23, 59, 59, 999))
+        }
+      }
+    })
+
+    const readyCount = await TimeSlot.count({
+      where: {
+        status: true
+      }
+    })
+
+    const rejectCount = await TimeSlot.count({
+      where: {
+        status: false
+      }
+    })
+
+    // Get monthly statistics
+    const currentYear = new Date().getFullYear()
+    const label = Array.from({ length: 12 }, (_, i) => `T${i + 1}`)
+    const data: number[] = new Array(12).fill(0)
+
+    const timeSlots = await TimeSlot.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: new Date(`${currentYear}-01-01`),
+          [Op.lte]: new Date(`${currentYear}-12-31`)
+        }
+      },
+      attributes: ['createdAt']
+    })
+
+    // Count by month
+    timeSlots.forEach((timeSlot) => {
+      const date = new Date(timeSlot?.dataValues.createdAt)
+      const monthIndex = date.getMonth() // 0 = Jan, 11 = Dec
+      data[monthIndex] += 1
+    })
+
+    return {
+      totalCount,
+      todayCount,
+      readyCount,
+      rejectCount,
+      chart: {
+        label,
+        data
+      }
+    }
+  }
 }

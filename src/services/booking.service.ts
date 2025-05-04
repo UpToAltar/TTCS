@@ -12,8 +12,31 @@ import { createBookingType } from '~/type/booking.type'
 import moment from 'moment'
 import { MedicalAppointment } from '~/models/MedicalAppointment'
 import { Service } from '~/models/Service'
+import { AppointmentService } from './appointment.service'
 
 export class BookingService {
+  private static async generateBookingCode(): Promise<string> {
+    // Find the latest booking code
+    const latestBooking = await Booking.findOne({
+      where: {
+        code: {
+          [Op.like]: 'BK%'
+        }
+      },
+      order: [['code', 'DESC']]
+    })
+
+    let nextNumber = 1
+    if (latestBooking?.dataValues.code) {
+      // Extract the number part and increment
+      const currentNumber = parseInt(latestBooking.dataValues.code.substring(2))
+      nextNumber = currentNumber + 1
+    }
+
+    // Format the new code with leading zeros
+    return `BK${String(nextNumber).padStart(5, '0')}`
+  }
+
   static async createBooking(body: createBookingType, patientId: string) {
     try {
       const user = await User.findOne({ where: { id: patientId } })
@@ -29,9 +52,14 @@ export class BookingService {
         throw new Error('Không tìm thấy dịch vụ')
       }
       if (!slot?.dataValues.status) throw new Error('Đã có người đặt lịch ở khung giờ này')
+
+      // Generate new booking code
+      const bookingCode = await BookingService.generateBookingCode()
+
       //Tạo lịch hẹn mới
       const newBooking = await Booking.create({
         id: uuidv4(),
+        code: bookingCode,
         patientId: patientId,
         timeSlotId: body.timeSlotId,
         serviceId: body.serviceId,
@@ -43,6 +71,7 @@ export class BookingService {
       return {
         booking: {
           id: newBooking?.dataValues.id,
+          code: newBooking?.dataValues.code,
           patientId: newBooking?.dataValues.patientId,
           timeSlotId: newBooking?.dataValues.timeSlotId,
           serviceId: newBooking?.dataValues.serviceId,
@@ -56,6 +85,44 @@ export class BookingService {
       throw new Error(error.message)
     }
   }
+
+  static async createBookingByAdmin(body: createBookingType, patientId: string) {
+    try {
+      const user = await User.findOne({ where: { id: patientId } })
+      if (!user) {
+        throw new Error('Không tìm thấy người dùng')
+      }
+      const slot = await TimeSlot.findOne({ where: { id: body.timeSlotId } })
+      if (!slot) {
+        throw new Error('Không tìm thấy khung giờ')
+      }
+      const service = await Service.findOne({ where: { id: body.serviceId } })
+      if (!service) {
+        throw new Error('Không tìm thấy dịch vụ')
+      }
+      if (!slot?.dataValues.status) throw new Error('Đã có người đặt lịch ở khung giờ này')
+
+      // Generate new booking code
+      const bookingCode = await BookingService.generateBookingCode()
+      
+      //Tạo lịch hẹn mới
+      const newBooking = await Booking.create({
+        id: uuidv4(),
+        code: bookingCode,
+        patientId: patientId,
+        timeSlotId: body.timeSlotId,
+        serviceId: body.serviceId,
+        status: false // Đang chờ xác nhận
+      })
+
+      const verificationToken = generateToken({ bookingId: newBooking?.dataValues.id })
+      
+      return await BookingService.verifyBookingEmail(verificationToken)
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
   static async verifyBookingEmail(token: string) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'jwtSecret') as { bookingId: string }
@@ -85,9 +152,11 @@ export class BookingService {
       // Cập nhật lại trạng thái của timeSlot
       await TimeSlot.update({ status: false }, { where: { id: booking?.dataValues.timeSlotId } })
 
+      const appointmentCode = await AppointmentService.generateAppointmentCode()
       // Tạo appointment
       await MedicalAppointment.create({
         id: uuidv4(),
+        code: appointmentCode,
         bookingId: booking?.dataValues.id,
         date: new Date(),
         medicalRecordId: null,
@@ -150,8 +219,22 @@ export class BookingService {
         throw new Error('Không tìm thấy lịch hẹn hoặc bạn không có quyền huỷ')
       }
 
-      // Xóa lịch hẹn
-      await Booking.destroy({ where: { id: booking?.dataValues.id } })
+      // Kiểm tra xem appointment nếu trạng thái Chờ khám thì mới được hủy
+      const appointment = await MedicalAppointment.findOne({
+        where: {
+          bookingId: booking?.dataValues.id,
+          status: 'Chờ khám'
+        }
+      })
+      if (!appointment) {
+        throw new Error('Không thể hủy lịch hẹn do đã khám hoặc đã xuất hóa đơn')
+      }
+
+      // Cập nhật trạng thái của appointment
+      await appointment.update({ status: 'Đã hủy' })
+
+      // Update trạng thái lịch hẹn
+      await Booking.update({ status: false }, { where: { id: booking?.dataValues.id } })
 
       // Mở lại khung giờ đã bị hủy
       await TimeSlot.update({ status: true }, { where: { id: booking?.dataValues.timeSlotId } })
@@ -184,7 +267,6 @@ export class BookingService {
       const offset = (page - 1) * limit
 
       const whereCondition: any = {
-        status: true
       }
 
       // Nếu là bệnh nhân thì chỉ lấy lịch của chính họ
@@ -207,6 +289,17 @@ export class BookingService {
             model: TimeSlot,
             as: 'timeSlot',
             attributes: ['startDate', 'endDate', 'status', 'id'],
+            include: [
+              {
+                model: Doctor,
+                include: [
+                  {
+                    model: User,
+                    attributes: ['userName', 'email', 'phone', 'id']
+                  }
+                ]
+              }
+            ]
           },
           {
             model: Service,
@@ -216,12 +309,11 @@ export class BookingService {
         ]
       })
 
-      console.log('rows', rows);
-
       return {
         total: count,
         bookings: rows.map((booking) => ({
           id: booking?.dataValues.id,
+          code: booking?.dataValues.code,
           patientId: booking?.dataValues.patientId,
           timeSlotId: booking?.dataValues.timeSlotId,
           serviceId: booking?.dataValues.serviceId,
@@ -238,7 +330,13 @@ export class BookingService {
             id: booking?.dataValues.timeSlot?.dataValues.id,
             startDate: moment(booking?.dataValues.timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
             endDate: moment(booking?.dataValues.timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-            status: booking?.dataValues.timeSlot?.dataValues.status
+            status: booking?.dataValues.timeSlot?.dataValues.status,
+            doctor: booking?.dataValues.timeSlot?.dataValues.doctor ? {
+              id: booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.id,
+              userName: booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.user?.dataValues.userName,
+              email: booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.user?.dataValues.email,
+              phone: booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.user?.dataValues.phone
+            } : null
           },
           service: {
             id: booking?.dataValues.service?.dataValues.id,
@@ -256,7 +354,6 @@ export class BookingService {
       const booking = await Booking.findOne({
         where: {
           id,
-          status: true // Chỉ lấy lịch đã xác nhận
         },
         include: [
           {
@@ -281,6 +378,7 @@ export class BookingService {
 
       return {
         id: booking?.dataValues.id,
+        code: booking?.dataValues.code,
         patientId: booking?.dataValues.patientId,
         timeSlotId: booking?.dataValues.timeSlotId,
         serviceId: booking?.dataValues.serviceId,
@@ -305,6 +403,25 @@ export class BookingService {
           price: booking?.dataValues.service?.dataValues.price
         }
       }
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  static async updateStatusBooking(bookingId: string, status: boolean) {
+    try {
+      const booking = await Booking.findByPk(bookingId)
+      if (!booking) throw new Error('Lịch hẹn không tồn tại')
+      if(status == true && booking?.dataValues.status == false) {
+        const token = generateToken({ bookingId: booking?.dataValues.id })
+        return await BookingService.verifyBookingEmail(token)
+      }
+      if(status == false && booking?.dataValues.status == true) {
+        console.log('huy lich hen')
+        const token = generateToken({ bookingId: booking?.dataValues.id })
+        return await BookingService.verifyCancelBEmail(token)
+      }
+      return { message: 'Cập nhật trạng thái lịch hẹn thành công' }
     } catch (error: any) {
       throw new Error(error.message)
     }
