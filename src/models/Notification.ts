@@ -23,7 +23,7 @@ export class Notification extends Model {
   @Column(DataType.STRING)
   title!: string
 
-  @Column(DataType.STRING)
+  @Column(DataType.TEXT)
   content!: string
 
   @ForeignKey(() => User) // Khóa ngoại đến bảng Users

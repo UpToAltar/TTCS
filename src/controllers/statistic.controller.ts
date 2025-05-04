@@ -86,4 +86,29 @@ export class StatisticController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
+
+  /**
+   * @swagger
+   * /api/statistic/timeslot:
+   *   get:
+   *     summary: Thống kê lịch khám
+   *     description: Thống kê lịch khám
+   *     tags:
+   *       - Statistic
+   *     responses:
+   *       200:
+   *         description: Thống kê thành công
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getStatisticTimeSlot(req: Request, res: Response) {
+    try {
+      const result = await StatisticService.getStatisticTimeSlot()
+      res.json(apiResponse(HttpStatus.OK, 'Thống kê thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 }

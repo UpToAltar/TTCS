@@ -5,6 +5,8 @@ import moment from 'moment'
 import { TimeSlot } from '~/models/TimeSlot'
 import { Doctor } from '~/models/Doctor'
 import { validateAuthorization } from '~/utils/validateAuthorization'
+import { User } from '~/models/User'
+import { Specialty } from '~/models/Specialty'
 
 export class TimeSlotService {
   static async addTimeSlot(body: addTimeSlotType, user: any) {
@@ -186,14 +188,14 @@ export class TimeSlotService {
       })
       return timeSlot
         ? {
-          id: timeSlot?.dataValues.id,
-          doctorId: timeSlot?.dataValues.doctorId,
-          startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
-          endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-          status: timeSlot?.dataValues.status,
-          createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-          updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
-        }
+            id: timeSlot?.dataValues.id,
+            doctorId: timeSlot?.dataValues.doctorId,
+            startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
+            endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
+            status: timeSlot?.dataValues.status,
+            createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+            updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+          }
         : null
     } catch (error: any) {
       throw new Error(error.message)
@@ -206,7 +208,13 @@ export class TimeSlotService {
       const doctor = await Doctor.findOne({
         where: {
           id: doctorId
-        }
+        },
+        include: [
+          {
+            model: Specialty,
+            as: 'specialty'
+          }
+        ]
       })
       if (!doctor) {
         throw new Error('Bác sĩ không tồn tại')
@@ -232,6 +240,17 @@ export class TimeSlotService {
         const timeB = new Date(b.dataValues.startDate).getTime()
         return timeA - timeB
       })
+
+      // Tìm user của bác sĩ
+      const doctorUser = await User.findOne({
+        where: {
+          id: doctor?.dataValues.userId
+        }
+      })
+      if (!doctorUser) {
+        throw new Error('Bác sĩ không tồn tại')
+      }
+
       //Format lại thời gian
       return timeSlots.map((timeSlot) => ({
         id: timeSlot?.dataValues.id,
@@ -240,7 +259,9 @@ export class TimeSlotService {
         endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
         status: timeSlot?.dataValues.status,
         createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-        updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+        updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+        userName: doctorUser?.dataValues.userName || null,
+        specialtyName: doctor?.dataValues.specialty?.dataValues.name || null
       }))
     } catch (error: any) {
       throw new Error(error.message)

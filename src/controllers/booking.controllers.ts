@@ -270,4 +270,102 @@ export class BookingController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/booking/admin/add:
+   *   post:
+   *     summary: Thêm mới lịch hẹn (Admin)
+   *     description: Thêm mới lịch hẹn cho bệnh nhân (chỉ dành cho Admin)
+   *     tags:
+   *       - Booking
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               timeSlotId:
+   *                type: string
+   *               serviceId:
+   *                type: string
+   *               patientId:
+   *                type: string
+   *     responses:
+   *       201:
+   *         description: Thêm mới thành công
+   *       400:
+   *         description: Dữ liệu không hợp lệ
+   *       403:
+   *         description: Không có quyền thực hiện
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async addBookingByAdmin(req: Request, res: Response) {
+    try {
+      const body: createBookingType & { patientId: string } = req.body
+      
+      if (!body.patientId) {
+        res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Vui lòng cung cấp ID bệnh nhân', null, true))
+      } else {
+        const result: any = await BookingService.createBookingByAdmin(body, body.patientId)
+        res.json(apiResponse(HttpStatus.CREATED, 'Tạo mới lịch hẹn thành công', result))
+      }
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/booking/update-status:
+   *   put:
+   *     summary: Cập nhật trạng thái lịch hẹn
+   *     description: Cập nhật trạng thái lịch hẹn (true/false)
+   *     tags:
+   *       - Booking
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               bookingId:
+   *                type: string
+   *               status:
+   *                type: boolean
+   *     responses:
+   *       200:
+   *         description: Cập nhật trạng thái thành công
+   *       400:
+   *         description: Dữ liệu không hợp lệ
+   *       404:
+   *         description: Không tìm thấy lịch hẹn
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async updateBookingStatus(req: Request, res: Response) {
+    try {
+      const { bookingId, status } = req.body
+
+      if (!bookingId || status === undefined) {
+        res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Vui lòng cung cấp bookingId và status', null, true))
+      } else {
+        const result = await BookingService.updateStatusBooking(bookingId, status)
+        res.json(apiResponse(HttpStatus.OK, 'Cập nhật trạng thái lịch hẹn thành công', result))
+      }
+
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 }

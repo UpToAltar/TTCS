@@ -12,5 +12,7 @@ router.post('/cancel/:id', authentication, BookingController.requestCancelBookin
 router.get('/verify-cancel-email', BookingController.verifyCancelBooking)
 router.get('/', authentication, BookingController.getAllBookings)
 router.get('/:id', authentication, BookingController.getBookingById)
+router.post('/admin/add', authentication, isAdmin, BookingController.addBookingByAdmin)
+router.put('/update-status', authentication, isAdmin, BookingController.updateBookingStatus)
 
 export default router

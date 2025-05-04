@@ -32,6 +32,9 @@ export class Booking extends Model {
   @BelongsTo(() => Service)
   service!: Service
 
+  @Column(DataType.BOOLEAN)
+  status!: boolean
+
   @Column(DataType.STRING)
-  status!: string
+  code!: string
 }

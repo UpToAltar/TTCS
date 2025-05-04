@@ -46,7 +46,13 @@ export class NotificationService {
         where: whereCondition,
         order: [[sort, order]],
         limit,
-        offset
+        offset,
+        include: [
+          {
+            model: User,
+            attributes: ['userName']
+          }
+        ]
       })
 
       return {
@@ -56,6 +62,7 @@ export class NotificationService {
           title: notification?.dataValues.title,
           content: notification?.dataValues.content,
           userId: notification?.dataValues.userId,
+          userName: notification?.dataValues.user?.dataValues.userName || null,
           createdAt: moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
           updatedAt: moment(notification?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }))
@@ -67,13 +74,21 @@ export class NotificationService {
 
   static async getNotificationById(id: string) {
     try {
-      const notification = await Notification.findByPk(id)
+      const notification = await Notification.findByPk(id, {
+        include: [
+          {
+            model: User,
+          }
+        ]
+      })
+      console.log('user', notification?.dataValues) 
       return notification
         ? {
           id: notification?.dataValues.id,
           title: notification?.dataValues.title,
           content: notification?.dataValues.content,
           userId: notification?.dataValues.userId,
+          userName: notification?.dataValues.user?.dataValues.userName || null,
           createdAt: moment(notification?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
           updatedAt: moment(notification?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
         }
