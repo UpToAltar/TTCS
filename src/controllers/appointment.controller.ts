@@ -179,8 +179,8 @@ export class AppointmentController {
    * @swagger
    * /api/appointment/update/{id}:
    *   put:
-   *     summary: Cập nhật hồ sơ bệnh án
-   *     description: Cập nhật hồ sơ bệnh án
+   *     summary: Cập nhật lịch hẹn khám bệnh
+   *     description: Cập nhật lịch hẹn khám bệnh
    *     tags:
    *       - Appointment
    *     parameters:

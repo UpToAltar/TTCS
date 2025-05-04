@@ -175,4 +175,47 @@ export class NotificationController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
+
+  /**
+   * @swagger
+   * /api/notification/contactus:
+   *   post:
+   *     summary: Gửi liên hệ tới các admin
+   *     description: Gửi liên hệ tới các admin
+   *     tags:
+   *       - Notification
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *               email:
+   *                 type: string
+   *               phone:
+   *                 type: string
+   *               topic:
+   *                 type: string
+   *               content:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: Gửi liên hệ thành công
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async ContactUsNotification(req: Request, res: Response) {
+    try {
+      const contact = req.body
+      const result = await NotificationService.contactUsNotification(contact)
+      res.json(apiResponse(HttpStatus.CREATED, 'Gửi thông báo liên hệ thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 }

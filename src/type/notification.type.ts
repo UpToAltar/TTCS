@@ -3,3 +3,11 @@ export type AddNotificationType = {
     content: string
     userId: string
 }
+
+export type ContactUsNotificationType = {
+    name: string
+    email: string
+    phone: string
+    topic: string
+    content: string
+}
