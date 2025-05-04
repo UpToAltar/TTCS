@@ -10,13 +10,15 @@ export const sendVerificationEmail = async (email: string, token: string, subjec
     }
   })
 
-  const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`
+  const verificationLink = `${process.env.CLIENT_URL}?token=${token}`
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
     subject: subject ? subject : 'Xác nhận tài khoản',
-    html: html ? html : `
+    html: html
+      ? html
+      : `
       <p>
         ※Mail này được gửi cho người dùng đã thực hiện thủ tục đăng ký người dùng tại 
         <strong>'Ứng dụng đặt lịch khám Youmed'</strong> để thông báo bạn đã hoàn thành quá trình tiếp nhận đăng ký tạm thời. 
@@ -74,7 +76,9 @@ export const sendVerificationBookingEmail = async (email: string, token: string,
     from: process.env.EMAIL_USER,
     to: email,
     subject: subject ? subject : 'Xác nhận lịch khám',
-    html: html ? html : `
+    html: html
+      ? html
+      : `
       <p>
         ※Mail này được gửi đến bạn từ <strong>'Ứng dụng đặt lịch khám Youmed'</strong> nhằm xác nhận lịch hẹn khám bệnh bạn đã đặt.
       </p>
@@ -114,7 +118,12 @@ export const sendVerificationBookingEmail = async (email: string, token: string,
   await transporter.sendMail(mailOptions)
 }
 
-export const sendVerificationCancelBookingEmail = async (email: string, token: string, subject?: string, html?: string) => {
+export const sendVerificationCancelBookingEmail = async (
+  email: string,
+  token: string,
+  subject?: string,
+  html?: string
+) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -129,7 +138,9 @@ export const sendVerificationCancelBookingEmail = async (email: string, token: s
     from: process.env.EMAIL_USER,
     to: email,
     subject: subject ? subject : 'Xác nhận hủy lịch khám',
-    html: html ? html : `
+    html: html
+      ? html
+      : `
       <p>
         ※Mail này được gửi từ <strong>'Ứng dụng đặt lịch khám Youmed'</strong> để xác nhận yêu cầu hủy lịch hẹn khám của bạn.
       </p>
