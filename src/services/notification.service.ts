@@ -1,9 +1,9 @@
 import { Notification } from '~/models/Notification'
 import { User } from '~/models/User'
-import { Doctor } from '~/models/Doctor'
-import { Op } from 'sequelize'
+import { Role } from '~/models/Role'
 import moment from 'moment'
-import { AddNotificationType } from '~/type/notification.type'
+import { AddNotificationType, ContactUsNotificationType } from '~/type/notification.type'
+import { where } from 'sequelize'
 export class NotificationService {
   static async addNotification(body: AddNotificationType) {
     try {
@@ -81,7 +81,7 @@ export class NotificationService {
           }
         ]
       })
-      console.log('user', notification?.dataValues) 
+      console.log('user', notification?.dataValues)
       return notification
         ? {
           id: notification?.dataValues.id,
@@ -106,6 +106,39 @@ export class NotificationService {
       }
       await notification.destroy()
     } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  static async contactUsNotification(body: ContactUsNotificationType) {
+    try {
+      const allAdmins = await User.findAll({
+        include: [
+          {
+            model: Role,
+            as: 'role',
+            where: { name: 'Admin' }
+          }
+        ],
+      })
+      console.log(allAdmins)
+      if (allAdmins.length == 0)
+        throw new Error('Không có Admin nào')
+      const title = `Liên hệ từ: ${body.name} - ${body.topic}`;
+      const content = `Họ và tên: ${body.name}
+        Email: ${body.email}
+        SĐT: ${body.phone}
+        Nội dung: ${body.content}
+      `.trim();
+      const notifications = allAdmins.map(admin => ({
+        title,
+        content,
+        userId: admin?.dataValues.id
+      }))
+      await Notification.bulkCreate(notifications)
+      console.log(`Đã gửi thông báo cho ${allAdmins.length} admin`)
+    }
+    catch (error: any) {
       throw new Error(error.message)
     }
   }
