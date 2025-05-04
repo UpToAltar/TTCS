@@ -137,6 +137,14 @@ export class NotificationService {
       }))
       await Notification.bulkCreate(notifications)
       console.log(`Đã gửi thông báo cho ${allAdmins.length} admin`)
+      return {
+        message: 'Gửi liên hệ thành công',
+        data: notifications.map((notification) => ({
+          title: notification.title,
+          content: notification.content,
+          userId: notification.userId,
+        }))
+      }
     }
     catch (error: any) {
       throw new Error(error.message)
