@@ -14,7 +14,6 @@ export class DoctorService {
 
       // Điều kiện tìm kiếm theo userName, email, phone
       const userWhereCondition: any = {
-        status: true // Chỉ lấy người dùng có status = true
       }
 
       if (search) {
@@ -72,6 +71,7 @@ export class DoctorService {
               description: doctor?.dataValues.description || null,
               specialtyId: doctor?.dataValues.specialty?.dataValues.id || null,
               specialtyName: doctor?.dataValues.specialty?.dataValues.name || null,
+              status: user?.dataValues.status || null,
               createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
               updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
             }
@@ -114,6 +114,7 @@ export class DoctorService {
         degree: doctor?.dataValues.degree || null,
         description: doctor?.dataValues.description || null,
         img: doctor?.dataValues.user?.dataValues.img || null,
+        status: doctor?.dataValues.user?.dataValues.status || null,
         createdAt: moment(doctor?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
         updatedAt: moment(doctor?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
@@ -124,7 +125,7 @@ export class DoctorService {
   static async updateDoctorbyAdmin(id: string, body: EditDoctorType) {
     try {
       const doctor = await Doctor.findOne({
-        where: { userId: id }
+        where: { id: id }
       })
 
       if (!doctor) throw new Error('Bác sĩ không tồn tại')
@@ -159,16 +160,14 @@ export class DoctorService {
 
   // Xóa bác sĩ
   static async deleteDoctor(id: string) {
-    const user = await User.findByPk(id)
-    if (!user) {
-      throw new Error('Người dùng không tồn tại')
-    }
-    // Kiểm tra xem người dùng có phải là bác sĩ hay không
-    const doctor = await Doctor.findOne({ where: { userId: id } })
-
-    if (doctor) {
-      await doctor.destroy() // Xóa bản ghi bác sĩ trước
-    }
+    const doctor = await Doctor.findByPk(id)
+    if (!doctor) throw new Error('Bác sĩ không tồn tại')
+    const user = await User.findByPk(doctor?.dataValues.userId)
+    if (!user) throw new Error('Người dùng không tồn tại')
+    await doctor.destroy()
     await user.destroy()
+    return {
+      message: 'Xóa bác sĩ thành công'
+    }
   }
 }
