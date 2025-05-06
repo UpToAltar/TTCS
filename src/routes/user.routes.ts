@@ -6,7 +6,7 @@ import { handleValidationErrors } from '~/middlewares/validation'
 const router = Router()
 
 router.get('/', authentication, isAdmin, UserController.handleGetAllUsers)
-router.get('/:id', authentication, isAdmin, UserController.getUserById)
+router.get('/:id', authentication, UserController.getUserById)
 router.put(
   '/update-by-self',
   authentication,
