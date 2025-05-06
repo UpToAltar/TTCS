@@ -27,8 +27,6 @@ export class RecordController {
    *           schema:
    *             type: object
    *             properties:
-   *               doctorId:
-   *                type: string
    *               diagnosis:
    *                type: string
    *               prescription:

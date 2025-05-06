@@ -8,6 +8,9 @@ import { validateAuthorization } from '~/utils/validateAuthorization'
 import moment from 'moment'
 import { MedicalAppointment } from '~/models/MedicalAppointment'
 import { createAppointmentType, UpdateAppointmentType } from '~/type/appointment.type'
+import { Invoice } from '~/models/Invoice'
+import { BookingService } from './booking.service'
+import { generateToken } from '~/utils/token'
 
 export class AppointmentService {
   public static async generateAppointmentCode(): Promise<string> {
@@ -122,7 +125,9 @@ export class AppointmentService {
             code: appointment?.dataValues.code,
             bookingId: appointment?.dataValues.bookingId,
             status: appointment?.dataValues.status,
+            bookingCode: appointment?.dataValues.booking?.dataValues.code || null,
             date: moment(appointment?.dataValues.date).format('DD/MM/YYYY'),
+            recordId: appointment?.dataValues.medicalRecordId || null,
             createdAt: moment(appointment?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
             updatedAt: moment(appointment?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
           }
@@ -174,10 +179,14 @@ export class AppointmentService {
       throw new Error('Bạn không có quyền')
     }
 
-    const updatedAppointment = await appointment.update({
-      status: body.status,
-      date: new Date()
-    })
+    if (body.status == 'Đã hủy') {
+      const token = generateToken({ bookingId: findBooking?.dataValues.id })
+      return await BookingService.verifyCancelBEmail(token)
+    } else{
+      await appointment.update({
+        status: body.status,
+      })
+    }
 
     return appointment
       ? {
@@ -195,29 +204,24 @@ export class AppointmentService {
     const appointment = await MedicalAppointment.findByPk(id)
     if (!appointment) throw new Error('Lịch hẹn không tồn tại')
 
-    const findBooking = await Booking.findOne({
+    // Kiểm tra xem đã có hồ sơ khám chưa
+    if (appointment?.dataValues.medicalRecordId != null) {
+      throw new Error('Lịch hẹn đã có hồ sơ khám')
+    }
+    // Kiểm tra đã xuất hóa đơn chưa
+    const findInvoice = await Invoice.findOne({
       where: {
-        id: appointment?.dataValues.bookingId,
-        status: true
+        appointmentId: id
       }
     })
-    if (!findBooking)
-      throw new Error('Lịch hẹn không tồn tại hoặc chưa được xác nhận')
-    const timeSlot = await TimeSlot.findOne({
-      where: { id: findBooking?.dataValues.timeSlotId }
-    })
-    if (!timeSlot) throw new Error('Không tìm thấy giờ hẹn');
-    const findDoctor = await Doctor.findOne({
-      where: { id: timeSlot?.dataValues.doctorId }
-    })
+    if (findInvoice) throw new Error('Lịch hẹn đã xuất hóa đơn')
 
-    if (!findDoctor) throw new Error('Bác sĩ không tồn tại')
-    //Check quyền
-    if (!validateAuthorization(user, findDoctor?.dataValues.userId)) {
-      throw new Error('Bạn không có quyền')
+    //Kiểm tra lịch hẹn đã hủy mới được xóa
+    if (appointment?.dataValues.status == 'Đã hủy') {
+      await appointment.destroy()
+      return true
+    } else {
+      throw new Error('Chỉ được xóa lịch hẹn đã hủy')
     }
-
-    await appointment.destroy()
-    return true
   }
 }

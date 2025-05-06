@@ -1,5 +1,4 @@
 export type CreateRecordType = {
-  doctorId: string
   diagnosis: string
   prescription: string
   notes: string

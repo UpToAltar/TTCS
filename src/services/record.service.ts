@@ -6,25 +6,44 @@ import { validateAuthorization } from '~/utils/validateAuthorization'
 import { Doctor } from '~/models/Doctor'
 import { MedicalRecord } from '~/models/MedicalRecord'
 import { MedicalAppointment } from '~/models/MedicalAppointment'
+import { User } from '~/models/User'
+import { Booking } from '~/models/Booking'
+import { TimeSlot } from '~/models/TimeSlot'
 
 export class RecordService {
   static async createRecord(body: CreateRecordType, user: any) {
-    const findDoctor = await Doctor.findOne({ where: { id: body.doctorId } })
-    if (!findDoctor) throw new Error('Bác sĩ không tồn tại')
-    //Check quyền
-    if (!validateAuthorization(user, findDoctor?.dataValues.userId)) {
-      throw new Error('Bạn không có quyền')
-    }
+    
     //Check appointment tồn tại và chưa có hồ sơ bệnh án
     const findAppointment = await MedicalAppointment.findOne({
       where: {
         id: body.medicalAppointmentId,
         medicalRecordId: null
-      }
+      },
+      include: [
+        {
+          model: Booking,
+          include: [
+            {
+              model: TimeSlot,
+              include: [
+                {
+                  model: Doctor,
+                }
+              ]
+            }
+          ]
+        }
+      ]
     })
     if (!findAppointment) throw new Error('Lịch hẹn không tồn tại')
+    const doctorId = findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.id
+    // Tìm bác sĩ
+    //Check quyền
+    if (!validateAuthorization(user, doctorId)) {
+      throw new Error('Bạn không có quyền')
+    }
     const record = await MedicalRecord.create({
-      doctorId: body.doctorId,
+      doctorId: doctorId,
       diagnosis: body.diagnosis,
       prescription: body.prescription,
       notes: body.notes
@@ -58,28 +77,51 @@ export class RecordService {
 
       const offset = (page - 1) * limit
       const whereCondition = findDoctor ? { doctorId: findDoctor?.dataValues.id } : {}
-      console.log('whereCondition', whereCondition)
 
       const { rows, count } = await MedicalRecord.findAndCountAll({
         where: whereCondition,
         order: [[sort, order]],
         limit,
-        offset
+        offset,
+        include: [
+          {
+            model: Doctor,
+            include: [
+              { model: Specialty, attributes: ['name'] },
+              { model: User, attributes: ['userName'] }
+            ]
+          }
+        ]
       })
+
+      const recordsWithAppointment = await Promise.all(rows.map(async (record) => {
+        // Tìm appointment theo medicalRecordId
+        const appointment = await MedicalAppointment.findOne({
+          where: { medicalRecordId: record?.dataValues.id }
+        })
+
+        return {
+          id: record?.dataValues.id,
+          doctorId: record?.dataValues.doctorId,
+          diagnosis: record?.dataValues.diagnosis,
+          prescription: record?.dataValues.prescription,
+          notes: record?.dataValues.notes,
+          createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+          doctor: {
+            id: record?.dataValues.doctor?.dataValues.id,
+            userName: record?.dataValues.doctor?.dataValues.user?.dataValues.userName || null,
+            specialtyName: record?.dataValues.doctor?.dataValues.specialty?.dataValues.name || null
+          },
+          appointment: appointment
+            ? { id: appointment?.dataValues.id, code: appointment?.dataValues.code }
+            : null
+        }
+      }))
 
       return {
         total: count,
-        record: rows.map((record) => {
-          return {
-            id: record?.dataValues.id,
-            doctorId: record?.dataValues.doctorId,
-            diagnosis: record?.dataValues.diagnosis,
-            prescription: record?.dataValues.prescription,
-            notes: record?.dataValues.notes,
-            createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-            updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
-          }
-        })
+        record: recordsWithAppointment
       }
     } catch (error: any) {
       throw new Error(error.message)
@@ -144,6 +186,14 @@ export class RecordService {
     //Check quyền
     if (!validateAuthorization(user, findDoctor?.dataValues.userId)) {
       throw new Error('Bạn không có quyền')
+    }
+    //Tìm appointment
+    const findAppointment = await MedicalAppointment.findOne({ where: { medicalRecordId: id } })
+    if (findAppointment) {
+      await findAppointment.update({
+        medicalRecordId: null,
+        status: 'Chờ khám'
+      })
     }
 
     await record.destroy()
