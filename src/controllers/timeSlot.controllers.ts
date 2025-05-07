@@ -260,5 +260,63 @@ export class TimeSlotController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
-  
+
+  /**
+   * @swagger
+   * /api/timeSlot/schedule/{doctorId}:
+   *   get:
+   *     summary: Lấy danh sách ngày có lịch khám của bác sĩ
+   *     description: Lấy danh sách các ngày có lịch khám của bác sĩ trong tương lai
+   *     tags:
+   *       - TimeSlot
+   *     parameters:
+   *       - in: path
+   *         name: doctorId
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Lấy danh sách thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       date:
+   *                         type: string
+   *                         example: "12/05/2024"
+   *                       total:
+   *                         type: number
+   *                         example: 3
+   *                       title:
+   *                         type: string
+   *                         example: "Th 2, 12-05"
+   *       400:
+   *         description: Dữ liệu không hợp lệ
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getDoctorScheduleDates(req: Request, res: Response) {
+    try {
+      const { doctorId } = req.params
+      if (!doctorId) {
+        res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(apiResponse(HttpStatus.BAD_REQUEST, 'Thiếu thông tin bác sĩ', null, true))
+      } else {
+        const result = await TimeSlotService.getDoctorScheduleDates(doctorId.toString())
+        res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách ngày có lịch khám thành công', result))
+      }
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 }

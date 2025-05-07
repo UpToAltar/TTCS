@@ -342,4 +342,57 @@ export class TimeSlotService {
       throw new Error(error.message)
     }
   }
+
+  static async getDoctorScheduleDates(doctorId: string) {
+    try {
+      // Check if doctor exists
+      const doctor = await Doctor.findOne({
+        where: {
+          id: doctorId
+        }
+      })
+      if (!doctor) {
+        throw new Error('Bác sĩ không tồn tại')
+      }
+
+      // Get all time slots for the doctor
+      const timeSlots = await TimeSlot.findAll({
+        where: {
+          doctorId
+        },
+        order: [['startDate', 'ASC']]
+      })
+
+      console.log(timeSlots)
+
+      // Group time slots by date and format the response
+      const scheduleDates = timeSlots.reduce((acc: any[], timeSlot) => {
+        const startDate = moment(timeSlot.dataValues.startDate)
+        const dateStr = startDate.format('DD/MM/YYYY')
+        const title = startDate.format('ddd, DD-MM').replace('Mon', 'Th 2')
+          .replace('Tue', 'Th 3')
+          .replace('Wed', 'Th 4')
+          .replace('Thu', 'Th 5')
+          .replace('Fri', 'Th 6')
+          .replace('Sat', 'Th 7')
+          .replace('Sun', 'CN')
+
+        const existingDate = acc.find(item => item.date === dateStr)
+        if (existingDate) {
+          existingDate.total++
+        } else {
+          acc.push({
+            date: dateStr,
+            total: 1,
+            title
+          })
+        }
+        return acc
+      }, [])
+
+      return scheduleDates
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
 }
