@@ -10,7 +10,7 @@ export const sendVerificationEmail = async (email: string, token: string, subjec
     }
   })
 
-  const verificationLink = `${process.env.CLIENT_URL}?token=${token}`
+  const verificationLink = `${process.env.CLIENT_URL}/verify-email.html?token=${token}`
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -69,8 +69,7 @@ export const sendVerificationBookingEmail = async (email: string, token: string,
     }
   })
 
-  const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`
-  // const verificationLink = `${process.env.CLIENT_URL}/verify-email.html?token=${token}`
+  const verificationLink = `${process.env.CLIENT_URL}/verify-booking-email.html?token=${token}`
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -132,7 +131,7 @@ export const sendVerificationCancelBookingEmail = async (
     }
   })
 
-  const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`
+  const verificationLink = `${process.env.CLIENT_URL}/verify-cancel-booking-email.html?token=${token}`
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
