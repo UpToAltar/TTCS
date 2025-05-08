@@ -50,9 +50,6 @@ export class InvoiceService {
         body.total = findAppointment?.dataValues.booking?.dataValues.service?.dataValues.price
       }
 
-      if (findAppointment?.dataValues.booking?.dataValues.status == 'Đã xuất hóa đơn') {
-        throw new Error('Lịch hẹn đã được xuất hóa đơn')
-      }
 
       if (findAppointment?.dataValues.booking?.dataValues.status == 'Đã hủy') {
         throw new Error('Lịch hẹn đã bị hủy')
@@ -211,7 +208,8 @@ export class InvoiceService {
               appointment: {
                 id: invoice?.dataValues.appointment?.dataValues.id || null,
                 date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY') || null,
-                status: invoice?.dataValues.appointment?.dataValues.status || null
+                status: invoice?.dataValues.appointment?.dataValues.status || null,
+                code: invoice?.dataValues.appointment?.dataValues.code || null
               },
               service: {
                 id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.id || null,
@@ -281,6 +279,10 @@ export class InvoiceService {
                     as: 'timeSlot'
                   }
                 ]
+              },
+              {
+                model: MedicalRecord,
+                as: 'medicalRecord'
               }
             ]
           }
@@ -312,7 +314,8 @@ export class InvoiceService {
         appointment: {
           id: invoice?.dataValues.appointment?.dataValues.id || null,
           date: moment(invoice?.dataValues.appointment?.dataValues.date).format('DD/MM/YYYY') || null,
-          status: invoice?.dataValues.appointment?.dataValues.status || null
+          status: invoice?.dataValues.appointment?.dataValues.status || null,
+          code: invoice?.dataValues.appointment?.dataValues.code || null
         },
         service: {
           id: invoice?.dataValues.appointment?.dataValues.booking?.dataValues.service?.dataValues.id || null,
@@ -344,6 +347,12 @@ export class InvoiceService {
           email: doctor?.dataValues.user?.dataValues.email || null,
           phone: doctor?.dataValues.user?.dataValues.phone || null,
           address: doctor?.dataValues.user?.dataValues.address || null
+        },
+        medicalRecord: {
+          id: invoice?.dataValues.appointment?.dataValues.medicalRecord?.dataValues.id || null,
+          diagnosis: invoice?.dataValues.appointment?.dataValues.medicalRecord?.dataValues.diagnosis || null,
+          prescription: invoice?.dataValues.appointment?.dataValues.medicalRecord?.dataValues.prescription || null,
+          notes: invoice?.dataValues.appointment?.dataValues.medicalRecord?.dataValues.notes || null
         }
       }
     } catch (error: any) {
