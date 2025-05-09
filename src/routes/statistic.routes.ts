@@ -8,4 +8,7 @@ router.get('/dashboard', authentication, isAdminOrDoctor, StatisticController.ge
 router.get('/user', authentication, isAdminOrDoctor, StatisticController.getStatisticUser)
 router.get('/doctor', authentication, isAdminOrDoctor, StatisticController.getStatisticDoctor)
 router.get('/timeslot', authentication, isAdminOrDoctor, StatisticController.getStatisticTimeSlot)
+router.post('/overview', authentication, isAdminOrDoctor, StatisticController.getOverviewStats)
+router.get('/recent-activities', authentication, isAdminOrDoctor, StatisticController.getRecentActivities)
+
 export default router

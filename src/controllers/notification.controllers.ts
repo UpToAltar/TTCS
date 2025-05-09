@@ -202,7 +202,7 @@ export class NotificationController {
    *               content:
    *                 type: string
    *     responses:
-   *       201:
+   *       200:
    *         description: Gửi liên hệ thành công
    *       500:
    *         description: Lỗi máy chủ

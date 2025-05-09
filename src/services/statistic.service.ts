@@ -7,6 +7,8 @@ import { Role } from '~/models/Role'
 import { Specialty } from '~/models/Specialty'
 import { TimeSlot } from '~/models/TimeSlot'
 import { User } from '~/models/User'
+import { Notification } from '~/models/Notification'
+import { News } from '~/models/News'
 
 export class StatisticService {
   static async getStatisticDashBoard() {
@@ -292,7 +294,7 @@ export class StatisticService {
 
   static async getStatisticTimeSlot() {
     const totalCount = await TimeSlot.count()
-    
+
     const todayCount = await TimeSlot.count({
       where: {
         startDate: {
@@ -348,5 +350,237 @@ export class StatisticService {
         data
       }
     }
+  }
+  public static getDateRange(time: string) {
+    const now = new Date()
+    let currentStart: Date, currentEnd: Date
+    let prevStart: Date, prevEnd: Date
+
+    switch (time) {
+      case 'today':
+        currentStart = new Date(now.setHours(0, 0, 0, 0))
+        currentEnd = new Date(now.setHours(23, 59, 59, 999))
+        prevStart = new Date()
+        prevStart.setDate(prevStart.getDate() - 1)
+        prevStart.setHours(0, 0, 0, 0)
+        prevEnd = new Date(prevStart)
+        prevEnd.setHours(23, 59, 59, 999)
+        break
+
+      case 'this_week':
+        const currDay = now.getDay()
+        const diffToMonday = currDay === 0 ? -6 : 1 - currDay
+        currentStart = new Date(now)
+        currentStart.setDate(now.getDate() + diffToMonday)
+        currentStart.setHours(0, 0, 0, 0)
+        currentEnd = new Date(currentStart)
+        currentEnd.setDate(currentStart.getDate() + 6)
+        currentEnd.setHours(23, 59, 59, 999)
+
+        prevStart = new Date(currentStart)
+        prevStart.setDate(prevStart.getDate() - 7)
+        prevEnd = new Date(currentEnd)
+        prevEnd.setDate(prevEnd.getDate() - 7)
+        break
+
+      case 'this_month':
+        currentStart = new Date(now.getFullYear(), now.getMonth(), 1)
+        currentEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+
+        prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)
+        break
+
+      case 'this_year':
+        currentStart = new Date(now.getFullYear(), 0, 1)
+        currentEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999)
+
+        prevStart = new Date(now.getFullYear() - 1, 0, 1)
+        prevEnd = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999)
+        break
+
+      default:
+        throw new Error('Invalid time range')
+    }
+
+    return { currentStart, currentEnd, prevStart, prevEnd }
+  }
+  static async getOverviewStats(time: string) {
+    try {
+
+      const { currentStart, currentEnd, prevStart, prevEnd } = this.getDateRange(time)
+      // Tổng số người dùng
+      const newtotalUsers = await User.count()
+
+      // Số lượng đặt lịch hôm nay
+      const newBookings = await Booking.count({
+        where: {
+          status: true,
+          createdAt: {
+            [Op.gte]: currentStart,
+            [Op.lte]: currentEnd
+          }
+        }
+      })
+
+      // Lấy tổng số bài viết mới
+      const newNews = await News.count({
+        where: {
+          createdAt: {
+            [Op.gte]: currentStart,
+            [Op.lte]: currentEnd
+          }
+        }
+      })
+
+      // Lấy các liên hệ mới
+      const newContacts = await Notification.count({
+        where: {
+          title: {
+            [Op.startsWith]: 'Liên hệ'
+          },
+          createdAt: {
+            [Op.gte]: currentStart,
+            [Op.lte]: currentEnd
+          }
+        }
+      })
+
+      const lastBookings = await Booking.count({
+        where: {
+          createdAt: {
+            [Op.gte]: prevStart,
+            [Op.lte]: prevEnd
+          }
+        }
+      })
+
+      const lastUsers = await User.count({
+        where: {
+          createdAt: {
+            [Op.gte]: prevStart,
+            [Op.lte]: prevEnd
+          }
+        }
+      })
+
+      const lastContacts = await Notification.count({
+        where: {
+          title: {
+            [Op.startsWith]: 'Liên hệ'
+          },
+          createdAt: {
+            [Op.gte]: prevStart,
+            [Op.lte]: prevEnd
+          }
+        }
+      })
+
+      const lastNews = await News.count({
+        where: {
+          createdAt: {
+            [Op.gte]: prevStart,
+            [Op.lte]: prevEnd
+          }
+        }
+      })
+
+      const bookingChange = lastBookings ? ((newBookings - newBookings) / lastBookings) * 100 : 0
+      const userChange = lastUsers ? ((newtotalUsers - lastUsers) / lastUsers) * 100 : 0
+      const contactChange = (newContacts - lastContacts)
+      const newsChange = (newNews - lastNews)
+
+      return {
+        totalUsers: {
+          count: newtotalUsers,
+          change: userChange.toFixed(0)
+        },
+        Bookings: {
+          count: newBookings,
+          change: bookingChange.toFixed(0)
+        },
+        News: {
+          count: newNews,
+          change: newsChange
+        },
+        Contacts: {
+          count: newContacts,
+          change: contactChange
+        }
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  static async getRecentActivities() {
+    try {
+      // Lấy đăng ký người dùng mới
+      const recentUsers = await User.findOne({
+        order: [['createdAt', 'DESC']],
+        attributes: ['createdAt']
+      })
+
+      // Lấy đặt lịch mới
+      const recentBookings = await Booking.findOne({
+        order: [['createdAt', 'DESC']],
+        attributes: ['createdAt'],
+      })
+
+      //Lấy bài viết mới
+      const recentNews = await News.findOne({
+        order: [['createdAt', 'DESC']],
+        attributes: ['createdAt']
+      })
+
+      // Lấy liên hệ mới
+      const recentContacts = await Notification.findOne({
+        where: {
+          title: {
+            [Op.startsWith]: 'Liên hệ'
+          }
+        },
+        order: [['createdAt', 'DESC']],
+        attributes: ['createdAt']
+      })
+
+      return {
+        recentUsers: {
+          timeAgo: this.getTimeAgo(recentUsers?.dataValues.createdAt)
+        },
+        recentBookings: {
+          timeAgo: this.getTimeAgo(recentBookings?.dataValues.createdAt)
+        },
+        recentNews: {
+          timeAgo: this.getTimeAgo(recentNews?.dataValues.createdAt)
+        },
+        recentContacts: {
+          timeAgo: this.getTimeAgo(recentContacts?.dataValues.createdAt)
+        }
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  public static getTimeAgo(date: Date): string {
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000)
+
+    let interval = seconds / 31536000
+    if (interval > 1) return Math.floor(interval) + ' năm trước'
+
+    interval = seconds / 2592000
+    if (interval > 1) return Math.floor(interval) + ' tháng trước'
+
+    interval = seconds / 86400
+    if (interval > 1) return Math.floor(interval) + ' ngày trước'
+
+    interval = seconds / 3600
+    if (interval > 1) return Math.floor(interval) + ' giờ trước'
+
+    interval = seconds / 60
+    if (interval > 1) return Math.floor(interval) + ' phút trước'
+
+    return Math.floor(seconds) + ' giây trước'
   }
 }
