@@ -446,6 +446,7 @@ export class StatisticService {
         }
       })
 
+      // Thống kê của khoảng thời gian trước
       const lastBookings = await Booking.count({
         where: {
           createdAt: {
@@ -485,7 +486,8 @@ export class StatisticService {
         }
       })
 
-      const bookingChange = lastBookings ? ((newBookings - newBookings) / lastBookings) * 100 : 0
+      // Tính toán sự thay đổi
+      const bookingChange = lastBookings ? ((newBookings - lastBookings) / lastBookings) * 100 : 0
       const userChange = lastUsers ? ((newtotalUsers - lastUsers) / lastUsers) * 100 : 0
       const contactChange = (newContacts - lastContacts)
       const newsChange = (newNews - lastNews)
@@ -582,5 +584,309 @@ export class StatisticService {
     if (interval > 1) return Math.floor(interval) + ' phút trước'
 
     return Math.floor(seconds) + ' giây trước'
+  }
+
+  static async getChartData(time: string) {
+    try {
+      const { currentStart, currentEnd } = this.getDateRange(time)
+
+      // Lấy dữ liệu lịch hẹn
+      const appointmentsData = await this.getAppointmentsData(currentStart, currentEnd, time)
+
+      // Lấy phân bố tuổi người dùng
+      const usersAgeData = await this.getUsersAgeData()
+
+      // Lấy dữ liệu chuyên khoa
+      const specialtiesData = await this.getSpecialtiesData()
+
+      // Lấy dữ liệu doanh thu
+      const revenueData = await this.getRevenueData(time)
+
+      return {
+        appointmentsChart: appointmentsData,
+        usersAgeChart: usersAgeData,
+        specialtiesChart: specialtiesData,
+        revenueChart: revenueData
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+
+  static async getAppointmentsData(startDate: Date, endDate: Date, time: string) {
+    let labels: string[] = []
+    let data: number[] = []
+
+    switch (time) {
+      case 'today':
+        labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
+        data = new Array(24).fill(0)
+        break
+      case 'this_week':
+        labels = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
+        data = new Array(7).fill(0)
+        break
+      case 'this_month':
+        const daysInMonth = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).getDate()
+        labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`)
+        data = new Array(daysInMonth).fill(0)
+        break
+      case 'this_year':
+        labels = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`)
+        data = new Array(12).fill(0)
+        break
+    }
+
+    const bookings = await Booking.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [startDate, endDate]
+        },
+        status: true // Chỉ lấy các lịch hẹn đã xác nhận
+      },
+      attributes: ['createdAt']
+    })
+
+    bookings.forEach(booking => {
+      const date = new Date(booking.get('createdAt'))
+      let index: number
+
+      switch (time) {
+        case 'today':
+          index = date.getHours()
+          break
+        case 'this_week':
+          index = date.getDay() // 0 = Chủ nhật, 1-6 = Thứ 2-7
+          break
+        case 'this_month':
+          index = date.getDate() - 1 // 0-based index
+          break
+        case 'this_year':
+          index = date.getMonth() // 0-11
+          break
+        default:
+          index = 0
+      }
+
+      if (index >= 0 && index < data.length) {
+        data[index]++
+      }
+    })
+
+    return { labels, data }
+  }
+
+  static async getUsersAgeData() {
+    const users = await User.findAll({
+      attributes: ['birthDate'],
+      where: {
+        birthDate: {
+          [Op.not]: null // Chỉ lấy người dùng có ngày sinh
+        }
+      }
+    })
+
+    const ageGroups = {
+      '0-18': 0,
+      '19-30': 0,
+      '31-45': 0,
+      '46-60': 0,
+      '60+': 0
+    }
+
+    users.forEach(user => {
+      const birthDate = user.get('birthDate') as Date
+      if (birthDate) {
+        const age = this.calculateAge(birthDate)
+        if (age <= 18) ageGroups['0-18']++
+        else if (age <= 30) ageGroups['19-30']++
+        else if (age <= 45) ageGroups['31-45']++
+        else if (age <= 60) ageGroups['46-60']++
+        else ageGroups['60+']++
+      }
+    })
+
+    return {
+      labels: Object.keys(ageGroups),
+      data: Object.values(ageGroups)
+    }
+  }
+
+  public static calculateAge(birthDate: Date): number {
+    const today = new Date()
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+
+    return age
+  }
+
+  static async getSpecialtiesData() {
+    const getRandomColor = () => {
+      const letters = '0123456789ABCDEF'
+      let color = '#'
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)]
+      }
+      return color
+    }
+
+    const specialties = await Specialty.findAll({
+      include: [{
+        model: Doctor,
+        include: [{
+          model: TimeSlot,
+          include: [{
+            model: Booking,
+            where: {
+              status: true // Chỉ lấy các lịch hẹn đã xác nhận
+            },
+            required: false
+          }]
+        }]
+      }]
+    })
+    const color: string[] = []
+
+    const data = specialties.map(specialty => {
+      const doctors = specialty.get('doctors') as Doctor[] || []
+      const bookingCount = doctors.reduce((total: number, doctor: Doctor) => {
+        const timeSlots = doctor.get('timeSlots') as TimeSlot[] || []
+        const bookings = timeSlots.reduce((slotTotal: number, timeSlot: TimeSlot) => {
+          const slotBookings = timeSlot.get('bookings') as Booking[] || []
+          return slotTotal + (slotBookings?.length || 0)
+        }, 0)
+        return total + bookings
+      }, 0)
+      return {
+        name: specialty.get('name'),
+        count: bookingCount,
+        color: getRandomColor()
+      }
+    })
+
+    // Sắp xếp theo số lượng booking và lấy top 5
+    data.sort((a, b) => b.count - a.count)
+    const top5 = data.slice(0, 5)
+
+    return {
+      labels: top5.map(item => item.name),
+      data: top5.map(item => item.count),
+      color: top5.map(item => item.color)
+    }
+  }
+
+  static async getRevenueData(time: string) {
+    const { currentStart, currentEnd } = this.getDateRange(time)
+    let labels: string[] = []
+    let data: number[] = []
+
+    switch (time) {
+      case 'today':
+        labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
+        data = new Array(24).fill(0)
+        break
+      case 'this_week':
+        labels = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
+        data = new Array(7).fill(0)
+        break
+      case 'this_month':
+        const daysInMonth = new Date(currentEnd.getFullYear(), currentEnd.getMonth() + 1, 0).getDate()
+        labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`)
+        data = new Array(daysInMonth).fill(0)
+        break
+      case 'this_year':
+        labels = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`)
+        data = new Array(12).fill(0)
+        break
+    }
+
+    const invoices = await Invoice.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [currentStart, currentEnd]
+        }
+      },
+      attributes: ['total', 'createdAt']
+    })
+
+    invoices.forEach(invoice => {
+      const date = new Date(invoice.get('createdAt'))
+      let index: number
+
+      switch (time) {
+        case 'today':
+          index = date.getHours()
+          break
+        case 'this_week':
+          index = date.getDay()
+          break
+        case 'this_month':
+          index = date.getDate() - 1
+          break
+        case 'this_year':
+          index = date.getMonth()
+          break
+        default:
+          index = 0
+      }
+
+      if (index >= 0 && index < data.length) {
+        data[index] += Number(invoice.get('total'))
+      }
+    })
+
+    return {
+      labels,
+      data
+    }
+  }
+
+  static async getTopSpecialties() {
+    try {
+      const specialties = await Specialty.findAll({
+        include: [{
+          model: Doctor,
+          include: [{
+            model: TimeSlot,
+            include: [{
+              model: Booking
+            }]
+          }]
+        }]
+      })
+      console.log(specialties)
+      const data = specialties.map(specialty => {
+        const doctors = specialty.get('doctors') as Doctor[] || []
+        const bookingCount = doctors.reduce((total: number, doctor: Doctor) => {
+          const timeSlots = doctor.get('timeSlots') as TimeSlot[] || []
+          const bookings = timeSlots.reduce((slotTotal: number, timeSlot: TimeSlot) => {
+            const slotBookings = timeSlot.get('bookings') as Booking[] || []
+            return slotTotal + (slotBookings?.length || 0)
+          }, 0)
+          return total + bookings
+        }, 0)
+        return {
+          name: specialty.get('name'),
+          bookingCount: bookingCount,
+          doctorCount: doctors.length
+        }
+      })
+
+      // Sắp xếp theo số lượng booking và lấy top 5
+      data.sort((a, b) => b.bookingCount - a.bookingCount)
+      return {
+        specialties: data.slice(0, 5),
+        chartData: {
+          labels: data.map(item => item.name),
+          data: data.map(item => item.bookingCount)
+        }
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
   }
 }
