@@ -140,7 +140,7 @@ export class StatisticController {
    */
   static async getOverviewStats(req: Request, res: Response) {
     try {
-      const { time } = req.body
+      const { time } = req.body || 'today'
       const result = await StatisticService.getOverviewStats(time)
       res.json(apiResponse(HttpStatus.OK, 'Thống kê thành công', result))
     } catch (error: any) {
@@ -168,6 +168,69 @@ export class StatisticController {
     try {
       const result = await StatisticService.getRecentActivities()
       res.json(apiResponse(HttpStatus.OK, 'Thống kê thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/statistic/chart:
+   *   post:
+   *     summary: Dữ liệu biểu đồ
+   *     description: Lấy dữ liệu cho các biểu đồ thống kê
+   *     tags:
+   *       - Statistic
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               time:
+   *                 type: string
+   *                 description: Chọn thời gian thống kê
+   *                 enum: [today, this_week, this_month, this_year]
+   *                 example: today || this_week || this_month || this_year
+   *     responses:
+   *       200:
+   *         description: Lấy dữ liệu thành công
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getChartData(req: Request, res: Response) {
+    try {
+      const { time } = req.body || 'today'
+      const result = await StatisticService.getChartData(time)
+      res.json(apiResponse(HttpStatus.OK, 'Lấy dữ liệu thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/statistic/specialties:
+   *   get:
+   *     summary: Top chuyên khoa
+   *     description: Lấy danh sách top chuyên khoa được đặt lịch nhiều nhất
+   *     tags:
+   *       - Statistic
+   *     responses:
+   *       200:
+   *         description: Lấy dữ liệu thành công
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getTopSpecialties(req: Request, res: Response) {
+    try {
+      const result = await StatisticService.getTopSpecialties()
+      res.json(apiResponse(HttpStatus.OK, 'Lấy dữ liệu thành công', result))
     } catch (error: any) {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)

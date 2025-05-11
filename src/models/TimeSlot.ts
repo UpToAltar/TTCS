@@ -1,5 +1,6 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo } from 'sequelize-typescript'
+import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript'
 import { Doctor } from './Doctor'
+import { Booking } from './Booking'
 
 @Table({ timestamps: true })
 export class TimeSlot extends Model {
@@ -23,4 +24,7 @@ export class TimeSlot extends Model {
 
   @Column(DataType.BOOLEAN)
   status?: boolean
+
+  @HasMany(() => Booking)
+  bookings!: Booking[]
 }

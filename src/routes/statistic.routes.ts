@@ -10,5 +10,7 @@ router.get('/doctor', authentication, isAdminOrDoctor, StatisticController.getSt
 router.get('/timeslot', authentication, isAdminOrDoctor, StatisticController.getStatisticTimeSlot)
 router.post('/overview', authentication, isAdminOrDoctor, StatisticController.getOverviewStats)
 router.get('/recent-activities', authentication, isAdminOrDoctor, StatisticController.getRecentActivities)
+router.post('/chart', authentication, isAdminOrDoctor, StatisticController.getChartData)
+router.get('/specialties', authentication, isAdminOrDoctor, StatisticController.getTopSpecialties)
 
 export default router
