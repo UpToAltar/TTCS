@@ -487,8 +487,8 @@ export class StatisticService {
       })
 
       // Tính toán sự thay đổi
-      const bookingChange = lastBookings ? ((newBookings - lastBookings) / lastBookings) * 100 : 0
-      const userChange = lastUsers ? ((newtotalUsers - lastUsers) / lastUsers) * 100 : 0
+      const bookingChange = lastBookings === 0 ? 100 : ((newBookings - lastBookings) / lastBookings) * 100
+      const userChange = lastUsers === 0 ? 100 : ((newtotalUsers - lastUsers) / lastUsers) * 100
       const contactChange = (newContacts - lastContacts)
       const newsChange = (newNews - lastNews)
 
@@ -513,6 +513,31 @@ export class StatisticService {
     } catch (error: any) {
       throw new Error(error.message)
     }
+  }
+
+  public static getTimeAgo(date: Date | null): string {
+    if (!date || isNaN(new Date(date).getTime())) {
+      return 'Chưa có dữ liệu'
+    }
+
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000)
+
+    let interval = seconds / 31536000
+    if (interval > 1) return Math.floor(interval) + ' năm trước'
+
+    interval = seconds / 2592000
+    if (interval > 1) return Math.floor(interval) + ' tháng trước'
+
+    interval = seconds / 86400
+    if (interval > 1) return Math.floor(interval) + ' ngày trước'
+
+    interval = seconds / 3600
+    if (interval > 1) return Math.floor(interval) + ' giờ trước'
+
+    interval = seconds / 60
+    if (interval > 1) return Math.floor(interval) + ' phút trước'
+
+    return Math.floor(seconds) + ' giây trước'
   }
 
   static async getRecentActivities() {
@@ -548,42 +573,21 @@ export class StatisticService {
 
       return {
         recentUsers: {
-          timeAgo: this.getTimeAgo(recentUsers?.dataValues.createdAt)
+          timeAgo: this.getTimeAgo(recentUsers?.dataValues?.createdAt || null)
         },
         recentBookings: {
-          timeAgo: this.getTimeAgo(recentBookings?.dataValues.createdAt)
+          timeAgo: this.getTimeAgo(recentBookings?.dataValues?.createdAt || null)
         },
         recentNews: {
-          timeAgo: this.getTimeAgo(recentNews?.dataValues.createdAt)
+          timeAgo: this.getTimeAgo(recentNews?.dataValues?.createdAt || null)
         },
         recentContacts: {
-          timeAgo: this.getTimeAgo(recentContacts?.dataValues.createdAt)
+          timeAgo: this.getTimeAgo(recentContacts?.dataValues?.createdAt || null)
         }
       }
     } catch (error: any) {
       throw new Error(error.message)
     }
-  }
-
-  public static getTimeAgo(date: Date): string {
-    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000)
-
-    let interval = seconds / 31536000
-    if (interval > 1) return Math.floor(interval) + ' năm trước'
-
-    interval = seconds / 2592000
-    if (interval > 1) return Math.floor(interval) + ' tháng trước'
-
-    interval = seconds / 86400
-    if (interval > 1) return Math.floor(interval) + ' ngày trước'
-
-    interval = seconds / 3600
-    if (interval > 1) return Math.floor(interval) + ' giờ trước'
-
-    interval = seconds / 60
-    if (interval > 1) return Math.floor(interval) + ' phút trước'
-
-    return Math.floor(seconds) + ' giây trước'
   }
 
   static async getChartData(time: string) {
@@ -751,18 +755,19 @@ export class StatisticService {
     })
     const color: string[] = []
 
+
     const data = specialties.map(specialty => {
-      const doctors = specialty.get('doctors') as Doctor[] || []
+      const doctors = specialty?.dataValues?.doctors || []
       const bookingCount = doctors.reduce((total: number, doctor: Doctor) => {
-        const timeSlots = doctor.get('timeSlots') as TimeSlot[] || []
+        const timeSlots = doctor?.dataValues?.timeSlot || []
         const bookings = timeSlots.reduce((slotTotal: number, timeSlot: TimeSlot) => {
-          const slotBookings = timeSlot.get('bookings') as Booking[] || []
+          const slotBookings = timeSlot?.dataValues?.bookings || []
           return slotTotal + (slotBookings?.length || 0)
         }, 0)
         return total + bookings
       }, 0)
       return {
-        name: specialty.get('name'),
+        name: specialty?.dataValues?.name || '',
         count: bookingCount,
         color: getRandomColor()
       }
@@ -858,28 +863,28 @@ export class StatisticService {
           }]
         }]
       })
-      console.log(specialties)
+
       const data = specialties.map(specialty => {
-        const doctors = specialty.get('doctors') as Doctor[] || []
+        const doctors = specialty?.dataValues?.doctors || []
         const bookingCount = doctors.reduce((total: number, doctor: Doctor) => {
-          const timeSlots = doctor.get('timeSlots') as TimeSlot[] || []
+          const timeSlots = doctor?.dataValues?.timeSlot || []
           const bookings = timeSlots.reduce((slotTotal: number, timeSlot: TimeSlot) => {
-            const slotBookings = timeSlot.get('bookings') as Booking[] || []
+            const slotBookings = timeSlot?.dataValues?.bookings || []
             return slotTotal + (slotBookings?.length || 0)
           }, 0)
           return total + bookings
         }, 0)
         return {
-          name: specialty.get('name'),
+          name: specialty?.dataValues?.name || '',
           bookingCount: bookingCount,
           doctorCount: doctors.length
         }
       })
 
-      // Sắp xếp theo số lượng booking và lấy top 5
+      // Sắp xếp theo số lượng booking
       data.sort((a, b) => b.bookingCount - a.bookingCount)
       return {
-        specialties: data.slice(0, 5),
+        specialties: data,
         chartData: {
           labels: data.map(item => item.name),
           data: data.map(item => item.bookingCount)
