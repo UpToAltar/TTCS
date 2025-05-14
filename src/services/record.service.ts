@@ -36,14 +36,13 @@ export class RecordService {
       ]
     })
     if (!findAppointment) throw new Error('Lịch hẹn không tồn tại')
-    const doctorId = findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.id
-    // Tìm bác sĩ
+    const userId = findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.userId
     //Check quyền
-    if (!validateAuthorization(user, doctorId)) {
+    if (!validateAuthorization(user, userId)) {
       throw new Error('Bạn không có quyền')
     }
     const record = await MedicalRecord.create({
-      doctorId: doctorId,
+      doctorId: findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.id,
       diagnosis: body.diagnosis,
       prescription: body.prescription,
       notes: body.notes

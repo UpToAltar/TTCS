@@ -212,12 +212,13 @@ export class NewsController {
       const { id } = req.params
       const body: AddNewsType = req.body
       const file = req.file
+      const user = req.user
       if (!body.name || !body.description || !body.type) {
         res.status(400).json(apiResponse(HttpStatus.BAD_REQUEST, 'Các trường đều không được để trống', null, true))
         return
       }
 
-      const result = await NewsService.updateNews(id, body, file)
+      const result = await NewsService.updateNews(id, body, user, file)
       res.json(apiResponse(HttpStatus.OK, 'Cập nhật bài viết thành công', result))
     } catch (error: any) {
       res
@@ -251,7 +252,8 @@ export class NewsController {
   static async deleteNews(req: Request, res: Response) {
     try {
       const { id } = req.params
-      await NewsService.deleteNews(id)
+      const user = req.user
+      await NewsService.deleteNews(id, user)
       res.json(apiResponse(HttpStatus.OK, 'Xóa bài viết thành công', null))
     } catch (error: any) {
       res

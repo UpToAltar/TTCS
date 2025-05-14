@@ -363,7 +363,6 @@ export class TimeSlotService {
         order: [['startDate', 'ASC']]
       })
 
-      console.log(timeSlots)
 
       // Group time slots by date and format the response
       const scheduleDates = timeSlots.reduce((acc: any[], timeSlot) => {

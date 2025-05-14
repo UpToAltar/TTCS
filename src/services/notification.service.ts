@@ -7,7 +7,6 @@ import { where } from 'sequelize'
 export class NotificationService {
   static async addNotification(body: AddNotificationType) {
     try {
-      console.log('Body nhận được:', body)
       const user = await User.findByPk(body.userId)
 
       if (!user) throw new Error('Người dùng không tồn tại')
@@ -35,7 +34,6 @@ export class NotificationService {
       if (user.role == 'Doctor' || user.role == 'User') {
         findUser = await User.findOne({ where: { id: user.id } })
         if (!findUser) throw new Error('Người dùng không tồn tại')
-        console.log(user.id)
       }
 
       const whereCondition = findUser ? { userId: findUser?.dataValues.id } : {}
@@ -81,7 +79,6 @@ export class NotificationService {
           }
         ]
       })
-      console.log('user', notification?.dataValues)
       return notification
         ? {
           id: notification?.dataValues.id,
@@ -121,7 +118,6 @@ export class NotificationService {
           }
         ],
       })
-      console.log(allAdmins)
       if (allAdmins.length == 0)
         throw new Error('Không có Admin nào')
       const title = `Liên hệ từ: ${body.name} - ${body.topic}`;
@@ -136,7 +132,6 @@ export class NotificationService {
         userId: admin?.dataValues.id
       }))
       await Notification.bulkCreate(notifications)
-      console.log(`Đã gửi thông báo cho ${allAdmins.length} admin`)
       return {
         message: 'Gửi liên hệ thành công',
         data: notifications.map((notification) => ({

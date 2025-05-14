@@ -6,6 +6,7 @@ import { AddNewsType } from '~/type/news.type'
 import { News } from '~/models/News'
 import moment from 'moment'
 import { User } from '~/models/User'
+import { validateAuthorization } from '~/utils/validateAuthorization'
 
 export class NewsService {
   static async createNews(body: AddNewsType, file: Express.Multer.File) {
@@ -114,7 +115,7 @@ export class NewsService {
       : null
   }
 
-  static async updateNews(id: string, body : AddNewsType, file?: Express.Multer.File) {
+  static async updateNews(id: string, body : AddNewsType,user : any, file?: Express.Multer.File) {
     const news = await News.findByPk(id, {
       include: [
         {
@@ -124,6 +125,11 @@ export class NewsService {
       ]
     })
     if (!news) throw new Error('Bài viết không tồn tại')
+    if(user.role == 'Doctor') {
+      if(!validateAuthorization(user, news?.dataValues.user?.dataValues.id)) {
+        throw new Error('Bạn không có quyền sửa bài viết này')
+      }
+    }
 
     let imageUrl = news?.dataValues.img
 
@@ -163,9 +169,21 @@ export class NewsService {
       : null
   }
 
-  static async deleteNews(id: string) {
-    const news = await News.findByPk(id)
+  static async deleteNews(id: string, user: any) {
+    const news = await News.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: 'user'
+        }
+      ]
+    })
     if (!news) throw new Error('Bài viết không tồn tại')
+    if(user.role == 'Doctor') {
+      if(!validateAuthorization(user, news?.dataValues.user?.dataValues.id)) {
+        throw new Error('Bạn không có quyền xóa bài viết này')
+      }
+    }
 
     // **Lấy public_id từ URL ảnh**
     const imagePublicId = news?.dataValues.img.split('/').pop()?.split('.')[0]

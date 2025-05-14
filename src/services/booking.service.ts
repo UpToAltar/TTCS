@@ -126,13 +126,11 @@ export class BookingService {
   static async verifyBookingEmail(token: string) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'jwtSecret') as { bookingId: string }
-      console.log(decoded.bookingId)
       const booking = await Booking.findByPk(decoded.bookingId)
 
       if (!booking) {
         throw new Error('Lịch không tồn tại hoặc đã bị xoá')
       }
-      console.log(booking?.dataValues.status)
       if (booking?.dataValues.status == 1) {
         throw new Error('Lịch hẹn đã được hẹn vui lòng chọn lịch khác')
       }
@@ -192,7 +190,6 @@ export class BookingService {
           patientId: patientId
         }
       })
-      console.log(booking)
       if (!booking) {
         throw new Error('Không tìm thấy lịch hẹn hoặc bạn không có quyền huỷ')
       }
@@ -273,6 +270,20 @@ export class BookingService {
       if (user.role == 'User') {
         whereCondition.patientId = user.id
       }
+      // Nếu là bác sĩ thì lấy tất cả lịch của bác sĩ đó
+      if(user.role == 'Doctor') {
+        const doctor = await Doctor.findOne({ where: { userId: user.id } })
+        if(doctor) {
+          const timeSlots = await TimeSlot.findAll({ 
+            where: { doctorId: doctor?.dataValues.id },
+            attributes: ['id']
+          })
+          const timeSlotIds = timeSlots.map(slot => slot?.dataValues.id)
+          whereCondition.timeSlotId = {
+            [Op.in]: timeSlotIds
+          }
+        }
+      }
 
       const { rows, count } = await Booking.findAndCountAll({
         where: whereCondition,
@@ -292,6 +303,7 @@ export class BookingService {
             include: [
               {
                 model: Doctor,
+                as: 'doctor',
                 include: [
                   {
                     model: User,
@@ -417,7 +429,6 @@ export class BookingService {
         return await BookingService.verifyBookingEmail(token)
       }
       if(status == false && booking?.dataValues.status == true) {
-        console.log('huy lich hen')
         const token = generateToken({ bookingId: booking?.dataValues.id })
         return await BookingService.verifyCancelBEmail(token)
       }
