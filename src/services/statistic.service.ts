@@ -150,7 +150,6 @@ export class StatisticService {
       attributes: ['total', 'createdAt']
     })
 
-    console.log('invoices', invoices)
 
     // Cộng dồn theo tháng
     invoices.forEach((invoice) => {

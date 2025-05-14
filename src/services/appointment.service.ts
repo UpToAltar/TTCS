@@ -101,12 +101,15 @@ export class AppointmentService {
       const whereCondition = findDoctor ? { doctorId: findDoctor?.dataValues.id } : {}
 
       const { rows, count } = await MedicalAppointment.findAndCountAll({
+        where: {},
         include: [
           {
             model: Booking,
+            required: true,
             include: [
               {
                 model: TimeSlot,
+                required: true,
                 where: whereCondition
               }
             ]

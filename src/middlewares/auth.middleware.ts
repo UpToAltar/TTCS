@@ -21,16 +21,16 @@ export const authentication: any = (req: Request, res: Response, next: NextFunct
     // Kiểm tra tài khoản đã kích hoạt chưa
     if(!decoded.status) {
       return res
-        .status(HttpStatus.FORBIDDEN)
-        .json(apiResponse(HttpStatus.FORBIDDEN, 'Tài khoản chưa kích hoạt vui lòng kích hoạt qua email', null, true))
+        .status(HttpStatus.UNAUTHORIZED)
+        .json(apiResponse(HttpStatus.UNAUTHORIZED, 'Tài khoản chưa kích hoạt vui lòng kích hoạt qua email', null, true))
     }
 
     req.user = decoded // Gán thông tin user vào request
     next() // Chuyển sang controller
   } catch (error) {
     return res
-      .status(HttpStatus.FORBIDDEN)
-      .json(apiResponse(HttpStatus.FORBIDDEN, 'Xác thực token thất bại', null, true))
+      .status(HttpStatus.UNAUTHORIZED)
+      .json(apiResponse(HttpStatus.UNAUTHORIZED, 'Xác thực token thất bại', null, true))
   }
 }
 

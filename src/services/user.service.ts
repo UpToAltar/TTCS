@@ -214,7 +214,6 @@ export class UserService {
       // Kiểm tra Số điện thoại đã tồn tại
       const user = await User.findByPk(id)
       if (!user) {
-        console.log('id', id)
         throw new Error('Người dùng không tồn tại')
       }
       // Kiểm tra xem có người dùng nào khác có cùng số điện thoại hoặc email không

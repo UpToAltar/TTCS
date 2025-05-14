@@ -172,7 +172,13 @@ export class InvoiceService {
                   },
                   {
                     model: TimeSlot,
-                    as: 'timeSlot'
+                    as: 'timeSlot',
+                    include: [
+                      {
+                        model: Doctor,
+                        as: 'doctor'
+                      }
+                    ]
                   }
                 ]
               }
@@ -239,6 +245,7 @@ export class InvoiceService {
               },
               doctor: {
                 id: doctor?.dataValues.id || null,
+                userId: doctor?.dataValues.user?.dataValues.id || null,
                 userName: doctor?.dataValues.user?.dataValues.userName || null,
                 email: doctor?.dataValues.user?.dataValues.email || null,
                 phone: doctor?.dataValues.user?.dataValues.phone || null,
@@ -389,8 +396,6 @@ export class InvoiceService {
     try {
       const invoice = await Invoice.findByPk(id)
       if (!invoice) throw new Error('Hóa đơn không tồn tại')
-
-      console.log('invoice', invoice);
       await invoice.destroy()
       return {
         message: 'Xóa hóa đơn thành công'
