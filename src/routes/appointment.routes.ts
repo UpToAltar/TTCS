@@ -14,6 +14,7 @@ router.post(
   AppointmentController.addAppointment
 )
 router.get('/', authentication, isAdminOrDoctor, AppointmentController.getAllAppointment)
+router.get('/user', authentication, AppointmentController.getAllUserRecords)
 router.get('/:id', authentication, isAdminOrDoctor, AppointmentController.getAppointmentById)
 router.put(
   '/update/:id',

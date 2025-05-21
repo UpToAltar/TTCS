@@ -14,7 +14,6 @@ router.post(
   RecordController.addRecord
 )
 router.get('/', authentication, isAdminOrDoctor, RecordController.getAllRecords)
-router.get('/user', authentication, RecordController.getAllUserRecords)
 router.get('/:id', authentication, isAdminOrDoctor, RecordController.getRecordById)
 router.put(
   '/update/:id',
