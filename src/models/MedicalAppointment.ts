@@ -1,7 +1,8 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo } from 'sequelize-typescript'
+import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasOne } from 'sequelize-typescript'
 import { Booking } from './Booking'
 import { Doctor } from './Doctor'
 import { MedicalRecord } from './MedicalRecord'
+import { Invoice } from './Invoice'
 
 @Table({ timestamps: true })
 export class MedicalAppointment extends Model {
@@ -32,4 +33,6 @@ export class MedicalAppointment extends Model {
 
   @Column(DataType.STRING)
   code!: string
+  @HasOne(() => Invoice, { foreignKey: 'appointmentId' })
+  invoice!: Invoice
 }

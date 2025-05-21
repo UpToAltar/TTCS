@@ -110,7 +110,60 @@ export class RecordController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
-
+  /**
+   * @swagger
+   * /api/record/user:
+   *   get:
+   *     summary: Lấy danh sách hồ sơ bệnh án
+   *     description: Lấy danh sách hồ sơ bệnh án
+   *     tags:
+   *       - Record
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: limit
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: sort
+   *         required: false
+   *         schema:
+   *           type: string
+   *       - in: query
+   *         name: order
+   *         required: false
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Lấy danh sách thành công
+   *       400:
+   *         description: Dữ liệu không hợp lệ
+   *       500:
+   *         description: Lỗi máy chủ
+   */
+  static async getAllUserRecords(req: Request, res: Response) {
+    try {
+      const { page = 1, limit = 10, sort = 'createdAt', order = 'DESC' } = req.query
+      const result: any = await RecordService.getAllRecordsandInvoiceandInvoice(
+        Number(page),
+        Number(limit),
+        String(sort),
+        String(order),
+        req.user
+      )
+      res.json(apiResponse(HttpStatus.OK, 'Lấy danh sách hồ sơ bệnh án người dùng thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
   /**
    * @swagger
    * /api/record/{id}:

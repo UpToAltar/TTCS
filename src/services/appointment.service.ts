@@ -185,7 +185,7 @@ export class AppointmentService {
     if (body.status == 'Đã hủy') {
       const token = generateToken({ bookingId: findBooking?.dataValues.id })
       return await BookingService.verifyCancelBEmail(token)
-    } else{
+    } else {
       await appointment.update({
         status: body.status,
       })
