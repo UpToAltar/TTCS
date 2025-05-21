@@ -270,7 +270,7 @@ export class AppointmentService {
           }
         ]
       });
-      const result = await Promise.all(rows.map(async (appointment) => {
+      const appoinments = await Promise.all(rows.map(async (appointment) => {
         const invoice = appointment?.dataValues.invoice;
         const record = appointment?.dataValues.medicalRecord;
         return {
@@ -288,7 +288,7 @@ export class AppointmentService {
               doctorId: record?.dataValues.doctorId,
               diagnosis: record?.dataValues.diagnosis,
               prescription: record?.dataValues.prescription,
-              notes: appointment?.dataValues.record?.dataValues.notes,
+              notes: record?.dataValues.notes,
               createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
               updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
               doctor: {
@@ -302,7 +302,7 @@ export class AppointmentService {
       }))
       return {
         total: count,
-        rows: result
+        appoinments
       };
     }
     catch (error: any) {
