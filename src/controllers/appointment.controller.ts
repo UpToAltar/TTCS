@@ -220,12 +220,12 @@ export class AppointmentController {
   }
   /**
    * @swagger
-   * /api/record/user:
+   * /api/appointment/user:
    *   get:
-   *     summary: Lấy danh sách hồ sơ bệnh án
-   *     description: Lấy danh sách hồ sơ bệnh án
+   *     summary: Lấy danh sách lịch hẹn hồ sơ bệnh án, hóa đơn
+   *     description: Lấy danh sách lịch hẹnhẹn
    *     tags:
-   *       - Record
+   *       - Appointment
    *     parameters:
    *       - in: query
    *         name: page
