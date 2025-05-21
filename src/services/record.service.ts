@@ -9,10 +9,11 @@ import { MedicalAppointment } from '~/models/MedicalAppointment'
 import { User } from '~/models/User'
 import { Booking } from '~/models/Booking'
 import { TimeSlot } from '~/models/TimeSlot'
+import { Invoice } from '~/models/Invoice'
 
 export class RecordService {
   static async createRecord(body: CreateRecordType, user: any) {
-    
+
     //Check appointment tồn tại và chưa có hồ sơ bệnh án
     const findAppointment = await MedicalAppointment.findOne({
       where: {
@@ -197,5 +198,85 @@ export class RecordService {
 
     await record.destroy()
     return true
+  }
+  static async getAllRecordsandInvoiceandInvoice(page: number, limit: number, sort: string, order: string, user: any) {
+    try {
+      //Check quyền
+      let findUser = null
+      if (user.role == 'User') {
+        findUser = await User.findOne({ where: { id: user.id } })
+        if (!findUser) throw new Error('Người dùng không tồn tại')
+      }
+
+      const offset = (page - 1) * limit
+
+      const { rows, count } = await MedicalAppointment.findAndCountAll({
+        // where: whereCondition,
+        order: [[sort, order]],
+        limit,
+        offset,
+        include: [
+          {
+            model: Booking,
+            required: true,
+            where: { patientId: user.id }
+          },
+          {
+            model: Invoice,
+            required: false
+          },
+          {
+            model: MedicalRecord,
+            required: false,
+            include: [
+              {
+                model: Doctor,
+                include: [
+                  { model: Specialty, attributes: ['name'] },
+                  { model: User, attributes: ['userName'] }
+                ]
+              }
+            ],
+          }
+        ]
+      });
+      const result = await Promise.all(rows.map(async (appointment) => {
+        const invoice = appointment?.dataValues.invoice;
+        const record = appointment?.dataValues.medicalRecord;
+        return {
+          id: appointment?.dataValues.id,
+          code: appointment?.dataValues.code,
+          status: appointment?.dataValues.status,
+          invoice: invoice
+            ? {
+              id: invoice?.dataValues.id,
+              status: invoice?.dataValues.status
+            }
+            : null,
+          record: record
+            ? {
+              doctorId: appointment?.dataValues.record?.dataValues.doctorId,
+              diagnosis: appointment?.dataValues.record?.dataValues.diagnosis,
+              prescription: appointment?.dataValues.record?.dataValues.prescription,
+              notes: appointment?.dataValues.record?.dataValues.notes,
+              createdAt: moment(record?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+              updatedAt: moment(record?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
+              doctor: {
+                id: record?.dataValues.doctor?.dataValues.id,
+                userName: record?.dataValues.doctor?.dataValues.user?.dataValues.userName || null,
+                specialtyName: record?.dataValues.doctor?.dataValues.specialty?.dataValues.name || null
+              },
+            }
+            : null,
+        }
+      }))
+      return {
+        total: count,
+        rows: result
+      };
+    }
+    catch (error: any) {
+      throw new Error(error.message)
+    }
   }
 }
