@@ -99,7 +99,7 @@ export class BookingController {
    * /api/booking/cancel/{id}:
    *   post:
    *     summary: Yêu cầu huỷ lịch hẹn
-   *     description: Gửi email yêu cầu xác nhận huỷ lịch hẹn
+   *     description: Yêu cầu xác nhận huỷ lịch hẹn
    *     tags:
    *       - Booking
    *     parameters:
@@ -111,7 +111,7 @@ export class BookingController {
    *           type: string
    *     responses:
    *       200:
-   *         description: Gửi email xác nhận huỷ thành công
+   *         description: Huỷ thành công
    *       404:
    *         description: Không tìm thấy lịch hẹn hoặc không có quyền huỷ
    *       500:
@@ -121,8 +121,6 @@ export class BookingController {
     try {
       const { id } = req.params
       const patientId = req.user?.id
-      console.log(id)
-      console.log(patientId)
       const result = await BookingService.cancelBooking(id, patientId)
 
       res.json(apiResponse(HttpStatus.OK, result.message, null))
@@ -304,7 +302,7 @@ export class BookingController {
   static async addBookingByAdmin(req: Request, res: Response) {
     try {
       const body: createBookingType & { patientId: string } = req.body
-      
+
       if (!body.patientId) {
         res
           .status(HttpStatus.BAD_REQUEST)

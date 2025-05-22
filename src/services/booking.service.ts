@@ -104,7 +104,7 @@ export class BookingService {
 
       // Generate new booking code
       const bookingCode = await BookingService.generateBookingCode()
-      
+
       //Tạo lịch hẹn mới
       const newBooking = await Booking.create({
         id: uuidv4(),
@@ -116,7 +116,7 @@ export class BookingService {
       })
 
       const verificationToken = generateToken({ bookingId: newBooking?.dataValues.id })
-      
+
       return await BookingService.verifyBookingEmail(verificationToken)
     } catch (error: any) {
       throw new Error(error.message)
@@ -193,15 +193,43 @@ export class BookingService {
       if (!booking) {
         throw new Error('Không tìm thấy lịch hẹn hoặc bạn không có quyền huỷ')
       }
+      // Kiểm tra xem appointment nếu trạng thái Chờ khám thì mới được hủy
+      const appointment = await MedicalAppointment.findOne({
+        where: {
+          bookingId: booking?.dataValues.id,
+          status: 'Chờ khám'
+        }
+      })
+      if (!appointment) {
+        throw new Error('Không thể hủy lịch hẹn do đã khám hoặc đã xuất hóa đơn')
+      }
+      // Cập nhật trạng thái của appointment
+      await appointment.update({ status: 'Đã hủy' })
 
-      // Lấy thông tin người dùng để gửi mail
-      const user = await User.findOne({ where: { id: patientId } })
+      // Update trạng thái lịch hẹn
+      await Booking.update({ status: false }, { where: { id: booking?.dataValues.id } })
 
-      // Gửi mail
-      const verificationToken = generateToken({ bookingId: booking?.dataValues.id })
-      await sendVerificationCancelBookingEmail(user?.dataValues.email, verificationToken)
+      // Mở lại khung giờ đã bị hủy
+      await TimeSlot.update({ status: true }, { where: { id: booking?.dataValues.timeSlotId } })
+
+      const timeSlot = await TimeSlot.findByPk(booking?.dataValues.timeSlotId)
+      const doctorId = timeSlot?.dataValues.doctorId
+      if (doctorId) {
+        const doctor = await Doctor.findByPk(doctorId)
+        const UserId = doctor?.dataValues.userId
+
+        const formattedDate = moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY')
+        const formattedStartTime = moment(timeSlot?.dataValues.startDate).format('HH:mm:ss')
+        const formattedEndTime = moment(timeSlot?.dataValues.endDate).format('HH:mm:ss')
+        await Notification.create({
+          id: uuidv4(),
+          title: 'Hủy lịch hẹn',
+          content: `Bạn có một lịch hẹn bị hủy vào ngày ${formattedDate} từ ${formattedStartTime} đến ${formattedEndTime}.`,
+          userId: UserId,
+        })
+      }
       return {
-        message: 'Xác nhận xóa lịch hẹn qua email'
+        message: 'Hủy lịch hẹn thành công.'
       }
     } catch (error: any) {
       throw new Error(error.message)
@@ -271,10 +299,10 @@ export class BookingService {
         whereCondition.patientId = user.id
       }
       // Nếu là bác sĩ thì lấy tất cả lịch của bác sĩ đó
-      if(user.role == 'Doctor') {
+      if (user.role == 'Doctor') {
         const doctor = await Doctor.findOne({ where: { userId: user.id } })
-        if(doctor) {
-          const timeSlots = await TimeSlot.findAll({ 
+        if (doctor) {
+          const timeSlots = await TimeSlot.findAll({
             where: { doctorId: doctor?.dataValues.id },
             attributes: ['id']
           })
@@ -424,11 +452,11 @@ export class BookingService {
     try {
       const booking = await Booking.findByPk(bookingId)
       if (!booking) throw new Error('Lịch hẹn không tồn tại')
-      if(status == true && booking?.dataValues.status == false) {
+      if (status == true && booking?.dataValues.status == false) {
         const token = generateToken({ bookingId: booking?.dataValues.id })
         return await BookingService.verifyBookingEmail(token)
       }
-      if(status == false && booking?.dataValues.status == true) {
+      if (status == false && booking?.dataValues.status == true) {
         const token = generateToken({ bookingId: booking?.dataValues.id })
         return await BookingService.verifyCancelBEmail(token)
       }
