@@ -12,27 +12,6 @@ import { TimeSlot } from '~/models/TimeSlot'
 import { Invoice } from '~/models/Invoice'
 
 export class RecordService {
-  private static async generateRecordCode(): Promise<string> {
-    // Find the latest invoice code
-    const latestRecord = await MedicalRecord.findOne({
-      where: {
-        code: {
-          [Op.like]: 'RE%'
-        }
-      },
-      order: [['code', 'DESC']]
-    })
-
-    let nextNumber = 1
-    if (latestRecord?.dataValues.code) {
-      // Extract the number part and increment
-      const currentNumber = parseInt(latestRecord.dataValues.code.substring(2))
-      nextNumber = currentNumber + 1
-    }
-
-    // Format the new code with leading zeros
-    return `RE${String(nextNumber).padStart(5, '0')}`
-  }
   static async createRecord(body: CreateRecordType, user: any) {
 
     //Check appointment tồn tại và chưa có hồ sơ bệnh án
@@ -63,10 +42,8 @@ export class RecordService {
     if (!validateAuthorization(user, userId)) {
       throw new Error('Bạn không có quyền')
     }
-    const RecordCode = await RecordService.generateRecordCode()
 
     const record = await MedicalRecord.create({
-      code: RecordCode,
       doctorId: findAppointment?.dataValues.booking?.dataValues.timeSlot?.dataValues.doctor?.dataValues.id,
       diagnosis: body.diagnosis,
       prescription: body.prescription,
@@ -80,7 +57,6 @@ export class RecordService {
     return record
       ? {
         id: record?.dataValues.id,
-        code: record?.dataValues.code,
         doctorId: record?.dataValues.doctorId,
         diagnosis: record?.dataValues.diagnosis,
         prescription: record?.dataValues.prescription,
@@ -127,7 +103,6 @@ export class RecordService {
 
         return {
           id: record?.dataValues.id,
-          code: record?.dataValues.code,
           doctorId: record?.dataValues.doctorId,
           diagnosis: record?.dataValues.diagnosis,
           prescription: record?.dataValues.prescription,
@@ -161,7 +136,6 @@ export class RecordService {
     return record
       ? {
         id: record?.dataValues.id,
-        code: record?.dataValues.code,
         doctorId: record?.dataValues.doctorId,
         diagnosis: record?.dataValues.diagnosis,
         prescription: record?.dataValues.prescription,
