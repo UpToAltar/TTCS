@@ -260,6 +260,42 @@ export class TimeSlotController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
+  /**
+   * @swagger
+   * /api/timeSlot/createDefaultTimeSlotOfDay:
+   *   post:
+   *     summary: Tạo lịch khám mặc định
+   *     description: Tạo lịch khám mặc định cho ngày tùy chọn theo doctorId
+   *     tags:
+   *       - TimeSlot
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               doctorId:
+   *                type: string
+   *               day:
+   *                type: string
+   *     responses:
+   *       201:
+   *         description: Tạo lịch khám thành công
+   *       500:
+   *         description: Dữ liệu không hợp lệ
+   */
+  static async createDefaultTimeSlotOfDay(req: Request, res: Response) {
+    try {
+      const { doctorId, day } = req.body
+      const result: any = await TimeSlotService.addDefaultTimeSlotOfDay(doctorId.toString(), day, req.user)
+      res.json(apiResponse(HttpStatus.CREATED, 'Tạo lịch khám mặc định thành công', result))
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
+    }
+  }
 
   /**
    * @swagger
