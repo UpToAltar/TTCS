@@ -333,6 +333,14 @@ export class TimeSlotService {
           currentTime = moment().startOf('day').hour(13).add(30, 'minutes')
           continue
         }
+        if (startTime.isAfter(moment())) {
+          timeSlots.push({
+            doctorId,
+            startDate: startTime.toDate(),
+            endDate: endTime.toDate(),
+            status: true
+          });
+        }
 
         timeSlots.push({
           doctorId,
@@ -437,6 +445,32 @@ export class TimeSlotService {
       }
     } catch (error: any) {
       throw new Error(error.message)
+    }
+  }
+  static async addDefaultTimeSlotForWeek(doctorId: string, startDay: string, user: any) {
+    try {
+      const startDate = moment(startDay, 'DD/MM/YYYY');
+      if (!startDate.isValid() || startDate.isBefore(moment(), 'day')) {
+        throw new Error('Ngày bắt đầu không hợp lệ hoặc đã qua');
+      }
+
+      const results = [];
+
+      for (let i = 0; i < 7; i++) {
+        const dayToCreate = startDate.clone().add(i, 'days').format('DD/MM/YYYY');
+        try {
+          const res = await this.addDefaultTimeSlotOfDay(doctorId, dayToCreate, user);
+          results.push({ day: dayToCreate, success: true, message: res.message });
+        } catch (error: any) {
+          results.push({ day: dayToCreate, success: false, message: error.message });
+        }
+      }
+      return {
+        message: 'Hoàn thành tạo lịch 7 ngày',
+        results
+      };
+    } catch (error: any) {
+      throw new Error(error.message);
     }
   }
 

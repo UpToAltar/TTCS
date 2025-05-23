@@ -296,6 +296,43 @@ export class TimeSlotController {
         .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true))
     }
   }
+  /**
+   * @swagger
+   * /api/timeSlot/createDefaultTimeSlotForWeek:
+   *   post:
+   *     summary: Tạo lịch khám mặc định cho 7 ngày liên tiếp
+   *     description: Tạo lịch khám mặc định cho 7 ngày liên tiếp, bắt đầu từ ngày tùy chọn theo doctorId
+   *     tags:
+   *       - TimeSlot
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               doctorId:
+   *                 type: string
+   *               startDay:
+   *                 type: string
+   *                 description: Ngày bắt đầu tạo lịch, định dạng DD/MM/YYYY
+   *     responses:
+   *       201:
+   *         description: Tạo lịch khám 7 ngày thành công
+   *       500:
+   *         description: Dữ liệu không hợp lệ hoặc lỗi server
+   */
+  static async createDefaultTimeSlotForWeek(req: Request, res: Response) {
+    try {
+      const { doctorId, startDay } = req.body;
+      const result: any = await TimeSlotService.addDefaultTimeSlotForWeek(doctorId.toString(), startDay, req.user);
+      res.json(apiResponse(HttpStatus.CREATED, 'Tạo lịch khám 7 ngày thành công', result));
+    } catch (error: any) {
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(apiResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message, null, true));
+    }
+  }
 
   /**
    * @swagger
