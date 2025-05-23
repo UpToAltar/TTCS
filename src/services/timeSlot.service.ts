@@ -88,6 +88,9 @@ export class TimeSlotService {
       if (!validateAuthorization(user, doctor?.dataValues.userId)) {
         throw new Error('Bạn không có quyền')
       }
+      if (!body.status) {
+        throw new Error('Không được sửa thời gian khám đã được đặt')
+      }
       //Format lại thời gian
       const startTime = moment(body.startDate, 'DD/MM/YYYY HH:mm:ss').toDate()
       if (startTime < new Date()) {
@@ -166,6 +169,12 @@ export class TimeSlotService {
 
       if (!timeSlot) {
         throw new Error('Thời gian khám không tồn tại')
+      }
+      if (new Date(timeSlot?.dataValues.startDate) <= new Date()) {
+        throw new Error('Không được xóa thời gian khám trong quá khứ')
+      }
+      if (!timeSlot?.dataValues.status) {
+        throw new Error('Không được xóa thời gian khám đã được đặt')
       }
       //Check bác sĩ có tồn tại không
       const doctor = await Doctor.findOne({
@@ -335,6 +344,85 @@ export class TimeSlotService {
         // Sau mỗi ca: tiến thêm 40 phút (30 phút ca khám + 10 phút nghỉ)
         currentTime.add(40, 'minutes')
         createdSlots++
+      }
+
+      await TimeSlot.bulkCreate(timeSlots)
+      return {
+        message: 'Thêm thời gian khám thành công',
+        data: timeSlots.map((timeSlot) => ({
+          doctorId: timeSlot.doctorId,
+          startDate: moment(timeSlot.startDate).format('DD/MM/YYYY HH:mm:ss'),
+          endDate: moment(timeSlot.endDate).format('DD/MM/YYYY HH:mm:ss'),
+          status: timeSlot.status
+        }))
+      }
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  }
+  // Đặt lịch tự động cho các khung giờ theo ngày
+  static async addDefaultTimeSlotOfDay(doctorId: string, day: string, user: any) {
+    try {
+      //Check bác sĩ có tồn tại không
+      const doctor = await Doctor.findOne({
+        where: {
+          id: doctorId
+        }
+      })
+      if (!doctor) {
+        throw new Error('Bác sĩ không tồn tại')
+      }
+      //Check quyền
+      if (!validateAuthorization(user, doctor?.dataValues.userId)) {
+        throw new Error('Bạn không có quyền')
+      }
+
+      const targetDate = moment(day, 'DD/MM/YYYY')
+      if (!targetDate.isValid() || targetDate.isBefore(moment(), 'day'))
+        throw new Error('Ngày không hợp lệ hoặc là ngày trong quá khứ');
+      //Check ngày đã có thời gian khám chưa
+      const startDate = targetDate.clone().startOf('day');
+      const endDate = targetDate.clone().endOf('day');
+      const existingTimeSlot = await TimeSlot.findOne({
+        where: {
+          doctorId,
+          startDate: { [Op.gte]: startDate },
+          endDate: { [Op.lte]: endDate }
+        }
+      })
+      if (existingTimeSlot) {
+        throw new Error('Ngày hôm nay đã có thời gian khám')
+      }
+      //Tạo mới thời gian
+      const timeSlots = []
+      let currentTime = targetDate.clone().hour(8).minute(0).second(0); // Bắt đầu từ 08:00
+      let createdSlots = 0
+
+      while (createdSlots < 14) {
+        const startTime = currentTime.clone()
+        const endTime = currentTime.clone().add(30, 'minutes')
+
+        // Check nếu đang trong khoảng nghỉ trưa (12:00 - 13:30)
+        if (
+          startTime.isSameOrAfter(targetDate.clone().hour(12).minute(0)) &&
+          startTime.isBefore(targetDate.clone().hour(13).minute(30))) {
+          currentTime = targetDate.clone().hour(13).minute(30)
+          continue
+        }
+        if (startTime.isAfter(moment())) {
+          timeSlots.push({
+            doctorId,
+            startDate: startTime.toDate(),
+            endDate: endTime.toDate(),
+            status: true
+          });
+        }
+        // Sau mỗi ca: tiến thêm 40 phút (30 phút ca khám + 10 phút nghỉ)
+        currentTime.add(40, 'minutes')
+        createdSlots++
+      }
+      if (timeSlots.length === 0) {
+        return { message: 'Không có khung giờ nào còn lại trong ngày để tạo.' };
       }
 
       await TimeSlot.bulkCreate(timeSlots)
