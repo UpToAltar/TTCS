@@ -26,6 +26,9 @@ export class TimeSlotService {
       }
       //Format lại thời gian
       const startTime = moment(body.startDate, 'DD/MM/YYYY HH:mm:ss').toDate()
+      if (startTime < new Date()) {
+        throw new Error('Không thể tạo khung giờ trong quá khứ')
+      }
       const endTime = moment(body.endDate, 'DD/MM/YYYY HH:mm:ss').toDate()
       //So sánh thời gian
       if (startTime >= endTime) {
@@ -87,7 +90,13 @@ export class TimeSlotService {
       }
       //Format lại thời gian
       const startTime = moment(body.startDate, 'DD/MM/YYYY HH:mm:ss').toDate()
+      if (startTime < new Date()) {
+        throw new Error('Không thể sửa khung giờ trong quá khứ')
+      }
       const endTime = moment(body.endDate, 'DD/MM/YYYY HH:mm:ss').toDate()
+      if (endTime < new Date()) {
+        throw new Error('Không thể tạo khung giờ trong quá khứ')
+      }
       //So sánh thời gian
       if (startTime >= endTime) {
         throw new Error('Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc')
@@ -188,14 +197,14 @@ export class TimeSlotService {
       })
       return timeSlot
         ? {
-            id: timeSlot?.dataValues.id,
-            doctorId: timeSlot?.dataValues.doctorId,
-            startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
-            endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
-            status: timeSlot?.dataValues.status,
-            createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
-            updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
-          }
+          id: timeSlot?.dataValues.id,
+          doctorId: timeSlot?.dataValues.doctorId,
+          startDate: moment(timeSlot?.dataValues.startDate).format('DD/MM/YYYY HH:mm:ss'),
+          endDate: moment(timeSlot?.dataValues.endDate).format('DD/MM/YYYY HH:mm:ss'),
+          status: timeSlot?.dataValues.status,
+          createdAt: moment(timeSlot?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
+          updatedAt: moment(timeSlot?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss')
+        }
         : null
     } catch (error: any) {
       throw new Error(error.message)
