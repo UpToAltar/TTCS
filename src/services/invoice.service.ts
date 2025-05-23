@@ -13,27 +13,6 @@ import { Doctor } from '~/models/Doctor'
 import { Notification } from '~/models/Notification'
 
 export class InvoiceService {
-  private static async generateInvoiceCode(): Promise<string> {
-    // Find the latest invoice code
-    const latestInvoice = await Invoice.findOne({
-      where: {
-        code: {
-          [Op.like]: 'IN%'
-        }
-      },
-      order: [['code', 'DESC']]
-    })
-
-    let nextNumber = 1
-    if (latestInvoice?.dataValues.code) {
-      // Extract the number part and increment
-      const currentNumber = parseInt(latestInvoice.dataValues.code.substring(2))
-      nextNumber = currentNumber + 1
-    }
-
-    // Format the new code with leading zeros
-    return `IN${String(nextNumber).padStart(5, '0')}`
-  }
   static async addInvoice(body: CreateInvoiceType) {
     try {
       const findAppointment = await MedicalAppointment.findOne({
@@ -75,10 +54,7 @@ export class InvoiceService {
       if (findAppointment?.dataValues.booking?.dataValues.status == 'Đã hủy') {
         throw new Error('Lịch hẹn đã bị hủy')
       }
-      const InvoiceCode = await InvoiceService.generateInvoiceCode()
-
       const invoice = await Invoice.create({
-        code: InvoiceCode,
         appointmentId: body.appointmentId,
         total: body.total,
         status: body.status,
@@ -117,7 +93,6 @@ export class InvoiceService {
         total: body.total || null,
         status: body.status || null,
         note: body.note || null,
-        code: invoice?.dataValues.code,
         createdAt: moment(invoice?.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss'),
         updatedAt: moment(invoice?.dataValues.updatedAt).format('DD/MM/YYYY HH:mm:ss'),
         appointment: {
@@ -132,7 +107,6 @@ export class InvoiceService {
         },
         medicalRecord: {
           id: findAppointment?.dataValues.medicalRecord?.dataValues.id || null,
-          code: findAppointment?.dataValues.medicalRecord?.dataValues.code || null,
           diagnosis: findAppointment?.dataValues.medicalRecord?.dataValues.diagnosis || null,
           prescription: findAppointment?.dataValues.medicalRecord?.dataValues.prescription || null,
           notes: findAppointment?.dataValues.medicalRecord?.dataValues.notes || null
