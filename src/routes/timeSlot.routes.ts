@@ -28,5 +28,11 @@ router.put(
 router.delete('/delete/:id', authentication, isAdminOrDoctor, TimeSlotController.deleteTimeSlot)
 router.post('/createDefaultTimeSlot', authentication, isAdminOrDoctor, TimeSlotController.createDefaultTimeSlot)
 router.post('/createDefaultTimeSlotOfDay', authentication, isAdminOrDoctor, TimeSlotController.createDefaultTimeSlotOfDay)
+router.post(
+  '/createDefaultTimeSlotForWeek',
+  authentication,
+  isAdminOrDoctor,
+  TimeSlotController.createDefaultTimeSlotForWeek
+);
 router.get('/schedule/:doctorId', TimeSlotController.getDoctorScheduleDates)
 export default router

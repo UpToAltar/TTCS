@@ -307,7 +307,10 @@ export class StatisticService {
 
     const readyCount = await TimeSlot.count({
       where: {
-        status: true
+        status: true,
+        startDate: {
+          [Op.gt]: new Date() // Chỉ đếm nếu thời gian bắt đầu > hiện tại
+        }
       }
     })
 
