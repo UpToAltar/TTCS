@@ -47,6 +47,9 @@ export class BookingService {
       if (!slot) {
         throw new Error('Không tìm thấy khung giờ')
       }
+      if (new Date(slot?.dataValues.startDate) <= new Date()) {
+        throw new Error('Khung giờ phải bắt đầu sau thời điểm hiện tại')
+      }
       const service = await Service.findOne({ where: { id: body.serviceId } })
       if (!service) {
         throw new Error('Không tìm thấy dịch vụ')
@@ -95,6 +98,9 @@ export class BookingService {
       const slot = await TimeSlot.findOne({ where: { id: body.timeSlotId } })
       if (!slot) {
         throw new Error('Không tìm thấy khung giờ')
+      }
+      if (new Date(slot?.dataValues.startDate) <= new Date()) {
+        throw new Error('Khung giờ phải bắt đầu sau thời điểm hiện tại')
       }
       const service = await Service.findOne({ where: { id: body.serviceId } })
       if (!service) {
@@ -192,6 +198,10 @@ export class BookingService {
       })
       if (!booking) {
         throw new Error('Không tìm thấy lịch hẹn hoặc bạn không có quyền huỷ')
+      }
+      const slot = await TimeSlot.findOne({ where: { id: booking?.dataValues.timeSlotId } })
+      if (new Date(slot?.dataValues.startDate) <= new Date()) {
+        throw new Error('Không được hủy các lịch hẹn trước đó')
       }
       // Kiểm tra xem appointment nếu trạng thái Chờ khám thì mới được hủy
       const appointment = await MedicalAppointment.findOne({
@@ -452,11 +462,20 @@ export class BookingService {
     try {
       const booking = await Booking.findByPk(bookingId)
       if (!booking) throw new Error('Lịch hẹn không tồn tại')
+
+      const slot = await TimeSlot.findOne({ where: { id: booking?.dataValues.timeSlotId } })
+
       if (status == true && booking?.dataValues.status == false) {
+        if (new Date(slot?.dataValues.startDate) <= new Date()) {
+          throw new Error('Không được xác nhận các lịch hẹn trước đó')
+        }
         const token = generateToken({ bookingId: booking?.dataValues.id })
         return await BookingService.verifyBookingEmail(token)
       }
       if (status == false && booking?.dataValues.status == true) {
+        if (new Date(slot?.dataValues.startDate) <= new Date()) {
+          throw new Error('Không được hủy các lịch hẹn trước đó')
+        }
         const token = generateToken({ bookingId: booking?.dataValues.id })
         return await BookingService.verifyCancelBEmail(token)
       }
