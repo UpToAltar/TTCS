@@ -8,11 +8,11 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // Giới hạn 10MB
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.match(/^image\/(png|jpe?g)$/)) {
-      return cb(new Error("Only .png, .jpg, .jpeg formats are allowed!"));
+    if (!file.mimetype.match(/^image\/(png|jpe?g|webp)$/)) {
+      return cb(new Error('Only .png, .jpg, .jpeg, .webp formats are allowed!'))
     }
-    cb(null, true);
-  },
-});
+    cb(null, true)
+  }
+})
 
 export default upload

@@ -87,6 +87,9 @@ export class AuthService {
       if (!checkPassword) {
         throw new Error('Mật khẩu không đúng')
       }
+      if (!user?.dataValues.status) {
+        throw new Error('Tài khoản chưa được kích hoạt')
+      }
 
       const resultUser: JwtUserType = {
         id: user?.dataValues.id,
