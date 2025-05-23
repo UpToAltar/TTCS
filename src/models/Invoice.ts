@@ -23,4 +23,7 @@ export class Invoice extends Model {
 
   @Column(DataType.STRING)
   note!: string
+
+  @Column(DataType.STRING)
+  code!: string
 }
