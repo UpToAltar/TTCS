@@ -24,6 +24,4 @@ export class MedicalRecord extends Model {
   @Column(DataType.TEXT)
   notes!: string
 
-  @Column(DataType.STRING)
-  code!: string
 }

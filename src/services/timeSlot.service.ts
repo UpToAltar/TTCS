@@ -75,6 +75,13 @@ export class TimeSlotService {
 
   static async updateTimeSlot(id: string, body: addTimeSlotType, user: any) {
     try {
+      const currentSlot = await TimeSlot.findOne({ where: { id } });
+      if (!currentSlot) {
+        throw new Error('Không tìm thấy khung giờ');
+      }
+      if (currentSlot.dataValues.status === false) {
+        throw new Error('Không được sửa thời gian khám đã được đặt');
+      }
       //Check bác sĩ có tồn tại không
       const doctor = await Doctor.findOne({
         where: {
@@ -87,9 +94,6 @@ export class TimeSlotService {
       //Check quyền
       if (!validateAuthorization(user, doctor?.dataValues.userId)) {
         throw new Error('Bạn không có quyền')
-      }
-      if (!body.status) {
-        throw new Error('Không được sửa thời gian khám đã được đặt')
       }
       //Format lại thời gian
       const startTime = moment(body.startDate, 'DD/MM/YYYY HH:mm:ss').toDate()
@@ -175,6 +179,9 @@ export class TimeSlotService {
       }
       if (!timeSlot?.dataValues.status) {
         throw new Error('Không được xóa thời gian khám đã được đặt')
+      }
+      if (!timeSlot?.dataValues.status) {
+        throw new Error('Không được xóa lịch hẹn đã được đặt')
       }
       //Check bác sĩ có tồn tại không
       const doctor = await Doctor.findOne({
